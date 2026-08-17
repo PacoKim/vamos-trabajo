@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["vite/client"]
+  },
+  "include": [
+    "gencow/**/*.ts",
+    "gencow.config.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts"
+  ]
+}
