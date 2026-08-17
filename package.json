@@ -1,20 +1,9 @@
 {
-  "name": "focusflow",
+  "name": "vamos-trabajo",
   "version": "0.1.0",
   "type": "module",
-  "packageManager": "pnpm@10.33.0",
   "dependencies": {
-    "@electric-sql/pglite": "^0.4.5",
-    "@gencow/client": "^0.2.6",
-    "@gencow/core": "latest",
-    "@gencow/react": "^0.2.6",
-    "better-auth": "^1.6.9",
-    "drizzle-kit": "^1.0.0-rc.4 || ^1.0.0",
-    "drizzle-orm": "^1.0.0-rc.4 || ^1.0.0",
-    "gencow": "latest",
-    "hono": "^4.12.18",
     "lucide-react": "^1.31.0",
-    "postgres": "^3.4.9",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -27,12 +16,9 @@
     "vite": "^8.2.1"
   },
   "scripts": {
-    "codegen": "gencow codegen",
     "dev": "vite",
-    "dev:backend": "gencow dev --local",
     "typecheck": "tsc --noEmit",
     "build": "tsc -b && vite build",
-    "db:push": "gencow db:push",
-    "db:generate": "gencow db:generate"
+    "preview": "vite preview"
   }
 }
