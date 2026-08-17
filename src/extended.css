@@ -245,6 +245,102 @@
   border-left: 3px solid #83a950;
   background: #eef4e9;
 }
+.experience-actions {
+  display: grid;
+  justify-items: end;
+  gap: 9px;
+  min-width: max-content;
+}
+.experience-actions button {
+  border: 1px solid #78907f;
+  background: white;
+  color: #355c48;
+  padding: 7px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.experience-actions b {
+  font-size: 10px;
+  color: #557441;
+}
+.experience-edit {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid #bfcfc2;
+  background: #f5f8f4;
+}
+.edit-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.edit-heading h3 {
+  margin: 4px 0 0;
+}
+.edit-heading small {
+  color: #719064;
+  font: 700 9px Manrope;
+  letter-spacing: 0.12em;
+}
+.edit-heading span {
+  color: #77867e;
+  font-size: 10px;
+}
+.edit-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+}
+.edit-grid label {
+  display: grid;
+  gap: 6px;
+  color: #496257;
+  font-size: 10px;
+  font-weight: 700;
+}
+.edit-grid .wide {
+  grid-column: 1 / -1;
+}
+.edit-grid input,
+.edit-grid textarea {
+  width: 100%;
+  border: 1px solid #ced8d0;
+  background: white;
+  padding: 10px 11px;
+  font: inherit;
+  font-weight: 400;
+}
+.edit-grid textarea {
+  min-height: 100px;
+  line-height: 1.65;
+  resize: vertical;
+}
+.edit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+.edit-buttons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: #19382c;
+  color: white;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.edit-buttons button svg {
+  width: 14px;
+}
+.edit-buttons .cancel {
+  border: 1px solid #bdc9c0;
+  background: white;
+  color: #52665b;
+}
 .caution {
   background: #fff3dc;
   color: #755d26;
@@ -311,6 +407,15 @@
   .journal-flow {
     display: grid;
     gap: 4px;
+  }
+  .edit-grid {
+    grid-template-columns: 1fr;
+  }
+  .edit-grid .wide {
+    grid-column: auto;
+  }
+  .edit-heading {
+    display: grid;
   }
   body {
     padding-bottom: 68px;

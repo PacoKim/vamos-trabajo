@@ -1354,11 +1354,37 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
         "단순 참여가 아니라 하드웨어 구현과 제어 경험으로 정리하면 전장 HW 직무의 실행력 소재가 됩니다.",
     },
   ];
-  const [items] = useState<any[]>(() => [
+  const [items, setItems] = useState<any[]>(() => [
     ...seeds,
     ...JSON.parse(localStorage.getItem("ahw-experiences") || "[]"),
   ]);
   const [open, setOpen] = useState<number | string>(1);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [draft, setDraft] = useState<any>(null);
+  const startEdit = (x: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpen(x.id);
+    setEditing(x.id);
+    setDraft({ ...x });
+  };
+  const cancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditing(null);
+    setDraft(null);
+  };
+  const saveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const savedItems = JSON.parse(
+      localStorage.getItem("ahw-experiences") || "[]",
+    ).map((item: any) => (item.id === draft.id ? draft : item));
+    localStorage.setItem("ahw-experiences", JSON.stringify(savedItems));
+    setItems((current) =>
+      current.map((item) => (item.id === draft.id ? draft : item)),
+    );
+    setEditing(null);
+    setDraft(null);
+  };
   return (
     <>
       {!embedded && (
@@ -1384,10 +1410,72 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                 <h2>{x.title}</h2>
                 <p>{x.summary}</p>
               </div>
-              <b>{open === x.id ? "접기 −" : "활용법 보기 +"}</b>
+              <div className="experience-actions">
+                {x.source && (
+                  <button type="button" onClick={(e) => startEdit(x, e)}>
+                    수정
+                  </button>
+                )}
+                <b>{open === x.id ? "접기 −" : "활용법 보기 +"}</b>
+              </div>
             </div>
             {open === x.id && (
               <div className="experience-detail">
+                {editing === x.id && draft && (
+                  <form className="experience-edit" onSubmit={saveEdit} onClick={(e) => e.stopPropagation()}>
+                    <div className="edit-heading">
+                      <div>
+                        <small>SAVED EXPERIENCE EDIT</small>
+                        <h3>저장한 경험 수정</h3>
+                      </div>
+                      <span>수정 내용은 이 기기에 자동 반영됩니다.</span>
+                    </div>
+                    <div className="edit-grid">
+                      <label>
+                        기록 날짜
+                        <input
+                          type="date"
+                          value={draft.date || ""}
+                          onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+                        />
+                      </label>
+                      <label>
+                        경험 제목
+                        <input
+                          required
+                          value={draft.title || ""}
+                          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                        />
+                      </label>
+                      <label className="wide">
+                        요약
+                        <textarea
+                          value={draft.summary || ""}
+                          onChange={(e) => setDraft({ ...draft, summary: e.target.value })}
+                        />
+                      </label>
+                      <label className="wide">
+                        내가 기록한 원문
+                        <textarea
+                          required
+                          value={draft.source || ""}
+                          onChange={(e) => setDraft({ ...draft, source: e.target.value })}
+                        />
+                      </label>
+                      <label className="wide">
+                        GPT 분석·자소서 초안
+                        <textarea
+                          value={draft.gptAnswer || ""}
+                          onChange={(e) => setDraft({ ...draft, gptAnswer: e.target.value })}
+                        />
+                      </label>
+                    </div>
+                    <div className="edit-buttons">
+                      <button type="button" className="cancel" onClick={cancelEdit}>취소</button>
+                      <button type="submit"><Save /> 수정 내용 저장</button>
+                    </div>
+                  </form>
+                )}
                 <div className="advantage-box">
                   <small>자소서에서 유리한 이유</small>
                   <p>
