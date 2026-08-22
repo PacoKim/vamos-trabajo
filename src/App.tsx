@@ -982,10 +982,18 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     track,
     minimum: true,
   }));
-  const defaultTasks: any[] = [];
+  const checklistStart = new Date("2026-08-24T00:00:00+09:00");
+  const checklistStarted = now >= checklistStart;
+  const defaultTasks = checklistStarted
+    ? minimumTasks.map((task, i) => ({
+        id: `daily-auto-${dateKey}-${i}`,
+        ...task,
+        done: false,
+      }))
+    : [];
   const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
     if (localStorage.getItem("ahw-daily-items-cleared-v1") !== "done") {
-      return { [dateKey]: [] };
+      return { [dateKey]: defaultTasks };
     }
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
@@ -1113,7 +1121,11 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
               </label>
             ))
           ) : (
-            <p>오늘의 할 일을 직접 추가해보세요.</p>
+            <p>
+              {checklistStarted
+                ? "오늘의 할 일을 직접 추가해보세요."
+                : "자동 체크리스트는 2026년 8월 24일 월요일부터 시작합니다."}
+            </p>
           )}
         </div>
         <form onSubmit={addTask}>
