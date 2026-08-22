@@ -67,6 +67,35 @@
   gap: 16px;
   padding: 0 4vw 18px;
 }
+.parallel-overview {
+  margin: 0 4vw 16px;
+  padding: 20px;
+  border: 1px solid #dce3dd;
+  background: white;
+}
+.parallel-overview-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.parallel-overview-head small { color: #789084; font: 700 9px Manrope; letter-spacing: .12em; }
+.parallel-overview-head h2 { margin: 4px 0; font: 700 18px Manrope; }
+.parallel-overview-head p { margin: 0; color: #718078; font-size: 9px; }
+.parallel-overview-head strong { color: #52733f; font: 800 25px Manrope; }
+.parallel-overview > div:nth-child(2) { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.parallel-overview article { display: grid; grid-template-columns: 24px 1fr 16px; gap: 8px; align-items: center; min-width: 0; padding: 11px; background: #f6f8f6; }
+.parallel-overview article > i { width: 22px; height: 22px; display: grid; place-items: center; background: #e5ece2; color: #587045; font-size: 9px; font-style: normal; font-weight: 800; }
+.parallel-overview article span { display: grid; min-width: 0; gap: 3px; }
+.parallel-overview article b { color: #365044; font-size: 8px; }
+.parallel-overview article small { color: #738078; font-size: 8px; line-height: 1.4; }
+.parallel-overview article svg { width: 14px; color: #8b9991; }
+.parallel-overview article.done { background: #edf4e7; }
+.parallel-overview article.done svg { color: #66824f; }
+.parallel-overview > button { margin-top: 12px; border: 0; background: transparent; color: #355e4b; padding: 4px 0; font-size: 9px; font-weight: 700; cursor: pointer; }
+.parallel-track-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 18px; }
+.parallel-track-checks label { display: grid; grid-template-columns: 22px 1fr; align-items: center; gap: 9px; min-height: 58px; padding: 10px; border: 1px solid #dce3dd; background: #f8faf8; cursor: pointer; }
+.parallel-track-checks input { display: none; }
+.parallel-track-checks label > i { width: 21px; height: 21px; display: grid; place-items: center; border: 1px solid #bdc8c1; }
+.parallel-track-checks label > i svg { width: 13px; color: #527439; }
+.parallel-track-checks span { display: grid; gap: 3px; }
+.parallel-track-checks b { color: #3f594c; font-size: 8px; }
+.parallel-track-checks small { color: #718078; font-size: 9px; line-height: 1.45; }
 .restart-banner {
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) 1.5fr;
@@ -217,6 +246,7 @@
   color: #4f6258;
   font-size: 11px;
 }
+.daily-tasks label > span small { display: block; margin-bottom: 2px; color: #789064; font-size: 7px; font-weight: 800; letter-spacing: .04em; }
 .daily-tasks input:checked ~ span {
   color: #929d97;
   text-decoration: line-through;
@@ -1043,6 +1073,8 @@
     grid-template-columns: 1fr;
     padding: 16px 14px 0;
   }
+  .parallel-overview { margin: 14px; padding: 16px; }
+  .parallel-overview > div:nth-child(2), .parallel-track-checks { grid-template-columns: 1fr; }
   .daily-overview > article {
     padding: 17px;
   }

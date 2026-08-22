@@ -598,6 +598,19 @@ const weeks: Week[] = raw.map((w, i) => ({
   deliverables: [...kickboardCoursePlan[i][3]],
   question: kickboardCoursePlan[i][4],
 }));
+const parallelTracks = (week: Week) => {
+  const n = week.n;
+  const automotive = n <= 4 ? "자동차 전장 용어 2개와 강의 내용 연결" : n <= 8 ? "차량 전원·보호 또는 CAN 개념 30분" : n <= 12 ? "Guided 회로를 자동차 환경 기준으로 비교" : "CAN·차량 전원·EMC Evidence 1개 보완";
+  const independent = n <= 4 ? "CAN Sensor ECU 요구사항 아이디어 1개 기록" : n <= 8 ? "CAN Sensor ECU Block·후보 부품 1개 검토" : n <= 12 ? "독립 프로젝트 요구사항·검증 기준 1개 확정" : n <= 15 ? "자동차 확장 내용을 ECU 설계에 반영" : "CAN Sensor ECU 설계·측정·문서화 진행";
+  return [
+    ["GUIDED COURSE", "배정한 전동킥보드 Lecture 학습과 노트"],
+    ["HW PRACTICE", `${week.title} 관련 계산·회로·Firmware·측정 중 1개`],
+    ["AUTOMOTIVE", automotive],
+    ["INDEPENDENT", independent],
+    ["EMPLOYMENT", "주간 결과물·면접 답변·포트폴리오 근거 1개"],
+    ["ENGLISH · APTITUDE", "통근 영어 3회 이상·인적성 2회 이상"],
+  ];
+};
 const nav: [[View, string, any], ...any[]] = [
   ["dashboard", "대시보드", BarChart3],
   ["careerHub", "취업 준비", Target],
@@ -982,16 +995,33 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
           ],
         }
       : schedules[now.getDay()];
-  const defaultTasks = schedule.events.map((event, i) => ({
-    id: `${dateKey}-${i}`,
-    text: event[1],
+  const technicalFocus = [
+    "주간 회고·다음 주 핵심 목표 3개",
+    "회로 기초 복습 또는 계산 20분",
+    "전동킥보드 강의·노트 30분",
+    "자동차 전장 확장 학습 20분",
+    "CAN Sensor ECU 결정사항 1개 기록",
+    "Evidence·면접 답변 1개 정리",
+    "HW 실습·측정 또는 주말 보충",
+  ][now.getDay()];
+  const minimumTasks = isNaN(now.getDay()) ? [] : [
+    { text: "통근 영어 20분 또는 Speaking 1세트", track: "영어", minimum: true },
+    { text: "인적성 10문제 또는 오답 10분", track: "인적성", minimum: true },
+    { text: technicalFocus, track: "HW·취업", minimum: true },
+    { text: "오늘 배운 것·직접 한 것 5분 기록", track: "Evidence", minimum: true },
+  ];
+  const defaultTasks = minimumTasks.map((task, i) => ({
+    id: `parallel-${dateKey}-${i}`,
+    ...task,
     done: false,
   }));
   const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
     );
-    return saved[dateKey] ? saved : { ...saved, [dateKey]: defaultTasks };
+    const existing = saved[dateKey] || [];
+    const additions = defaultTasks.filter((task) => !existing.some((x: any) => x.id === task.id));
+    return { ...saved, [dateKey]: [...existing, ...additions] };
   });
   const [newTask, setNewTask] = useState("");
   const tasks = allTasks[dateKey] || [];
@@ -1062,7 +1092,7 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
         <div className="daily-heading">
           <div>
             <small>DAILY CHECKLIST</small>
-            <h2>오늘 해야 할 일</h2>
+            <h2>취업 최소 체크리스트</h2>
           </div>
           <strong>
             {completed}/{tasks.length}
@@ -1091,7 +1121,10 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
                   }
                 />
                 <i>{task.done && <Check />}</i>
-                <span>{task.text}</span>
+                <span>
+                  {task.track && <small>{task.track} · {task.minimum ? "최소" : "추가"}</small>}
+                  {task.text}
+                </span>
                 <button
                   type="button"
                   aria-label={`${task.text} 삭제`}
@@ -1239,6 +1272,15 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
     </section>
   );
 }
+function ParallelOverview({ current, done, go }: { current: Week; done: Record<string, boolean>; go: (v: View) => void }) {
+  const tracks = parallelTracks(current);
+  const completed = tracks.filter((_, i) => done[`p${current.n}-${i}`]).length;
+  return <section className="parallel-overview">
+    <div className="parallel-overview-head"><div><small>WEEKLY PARALLEL PLAN</small><h2>이번 주 6개 병렬 트랙</h2><p>주간 핵심 3개와 별개로 각 영역의 흐름이 끊기지 않을 최소량입니다.</p></div><strong>{completed}/{tracks.length}</strong></div>
+    <div>{tracks.map(([name, task], i) => <article key={name} className={done[`p${current.n}-${i}`] ? "done" : ""}><i>{i + 1}</i><span><b>{name}</b><small>{task}</small></span>{done[`p${current.n}-${i}`] ? <Check /> : <Circle />}</article>)}</div>
+    <button onClick={() => go("study")}>병렬 주간 계획 열기 →</button>
+  </section>;
+}
 function Dashboard({
   current,
   done,
@@ -1327,6 +1369,7 @@ function Dashboard({
         </p>
       </section>
       <CourseSnapshot go={go} />
+      <ParallelOverview current={current} done={done} go={go} />
       <DailyAgenda go={go} />
       <section className="dash">
         <article className="panel">
@@ -1405,15 +1448,19 @@ function Study({
   done: Record<string, boolean>;
   setDone: (v: Record<string, boolean>) => void;
 }) {
+  const tracks = parallelTracks(current);
+  const mainCompleted = current.tasks.filter((_, i) => done[`w${week}-${i}`]).length;
+  const trackCompleted = tracks.filter((_, i) => done[`p${week}-${i}`]).length;
+  const weekRate = Math.round(((mainCompleted + trackCompleted) / (current.tasks.length + tracks.length)) * 100);
   return (
     <Page
       title="Weekly Study"
-      sub="2026년 8월 24일부터 기초 → 실습 → 자동차 적용 → 설명 순서로 다시 시작합니다."
+      sub="전동킥보드 강의를 중심으로 HW 실습·자동차 확장·독립 프로젝트·영어·취업 준비를 매주 병렬로 진행합니다."
     >
       <article className="study-restart">
         <b>새 시작 원칙</b>
         <span>지난주 미완료 작업을 그대로 쌓지 않기</span>
-        <span>WEEK 1부터 순서대로 진행</span>
+        <span>6개 취업 트랙을 매주 최소 단위로 병행</span>
         <span>평일 최대 2시간·주간 핵심 목표 최대 3개</span>
       </article>
       <div className="study">
@@ -1444,12 +1491,7 @@ function Study({
               <b>{current.phase}</b>
             </div>
             <strong>
-              {Math.round(
-                (current.tasks.filter((_, i) => done[`w${week}-${i}`]).length /
-                  current.tasks.length) *
-                  100,
-              )}
-              %
+              {weekRate}%
             </strong>
           </div>
           <h3>STUDY & PRACTICE</h3>
@@ -1467,6 +1509,17 @@ function Study({
                   <span>{t}</span>
                 </label>
               );
+            })}
+          </div>
+          <h3>PARALLEL TRACKS · 매주 끊기지 않게</h3>
+          <div className="parallel-track-checks">
+            {tracks.map(([name, task], i) => {
+              const id = `p${week}-${i}`;
+              return <label key={id}>
+                <input type="checkbox" checked={!!done[id]} onChange={() => setDone({ ...done, [id]: !done[id] })} />
+                <i>{done[id] && <Check />}</i>
+                <span><b>{name}</b><small>{task}</small></span>
+              </label>;
             })}
           </div>
           <div className="deliver">
