@@ -51,7 +51,7 @@ type Week = {
 };
 const raw = [
   [
-    "8/17–8/23",
+    "8/24–8/30",
     "회로설계 다시 시작하기",
     "FOUNDATION",
     [
@@ -65,7 +65,7 @@ const raw = [
     "KVL과 KCL의 차이는?",
   ],
   [
-    "8/24–8/30",
+    "8/31–9/6",
     "Capacitor와 RC Circuit",
     "FOUNDATION",
     [
@@ -80,7 +80,7 @@ const raw = [
     "Decoupling Capacitor의 역할은?",
   ],
   [
-    "8/31–9/6",
+    "9/7–9/13",
     "Diode",
     "FOUNDATION",
     [
@@ -94,7 +94,7 @@ const raw = [
     "TVS와 Zener Diode의 차이는?",
   ],
   [
-    "9/7–9/13",
+    "9/14–9/20",
     "MOSFET",
     "FOUNDATION",
     [
@@ -107,7 +107,7 @@ const raw = [
     "Rds(on)은 왜 중요한가?",
   ],
   [
-    "9/14–9/20",
+    "9/21–9/27",
     "OP AMP / Comparator",
     "CIRCUIT",
     [
@@ -120,7 +120,7 @@ const raw = [
     "OP AMP와 Comparator의 차이는?",
   ],
   [
-    "9/21–9/27",
+    "9/28–10/4",
     "전원회로 기초",
     "CIRCUIT",
     [
@@ -133,7 +133,7 @@ const raw = [
     "LDO와 Buck의 선택 기준은?",
   ],
   [
-    "9/28–10/4",
+    "10/5–10/11",
     "MCU 기초",
     "MCU & CAN",
     [
@@ -146,7 +146,7 @@ const raw = [
     "Watchdog은 왜 필요한가?",
   ],
   [
-    "10/5–10/11",
+    "10/12–10/18",
     "MCU 주변회로",
     "MCU & CAN",
     [
@@ -159,7 +159,7 @@ const raw = [
     "MCU 전원핀 근처 Capacitor의 역할은?",
   ],
   [
-    "10/12–10/18",
+    "10/19–10/25",
     "CAN Communication",
     "MCU & CAN",
     [
@@ -173,7 +173,7 @@ const raw = [
     "CAN에서 120Ω을 쓰는 이유는?",
   ],
   [
-    "10/19–10/25",
+    "10/26–11/1",
     "Automotive Protection",
     "AUTOMOTIVE",
     [
@@ -187,7 +187,7 @@ const raw = [
     "ESD와 EMC의 차이는?",
   ],
   [
-    "10/26–11/1",
+    "11/2–11/8",
     "KiCad 시작",
     "PCB",
     [
@@ -200,7 +200,7 @@ const raw = [
     "ERC는 무엇을 검사하는가?",
   ],
   [
-    "11/2–11/8",
+    "11/9–11/15",
     "PCB 기초",
     "PCB",
     [
@@ -213,7 +213,7 @@ const raw = [
     "Decoupling 배치가 중요한 이유는?",
   ],
   [
-    "11/9–11/15",
+    "11/16–11/22",
     "CAN Sensor ECU 설계 시작",
     "ECU PROJECT",
     [
@@ -227,7 +227,7 @@ const raw = [
     "요구사항에서 구조를 어떻게 도출했는가?",
   ],
   [
-    "11/16–11/22",
+    "11/23–11/29",
     "ECU Component Selection",
     "ECU PROJECT",
     [
@@ -241,7 +241,7 @@ const raw = [
     "왜 이 부품을 선택했는가?",
   ],
   [
-    "11/23–11/29",
+    "11/30–12/6",
     "ECU Schematic",
     "ECU PROJECT",
     [
@@ -255,7 +255,7 @@ const raw = [
     "회로도를 Block 단위로 설명해보라.",
   ],
   [
-    "11/30–12/6",
+    "12/7–12/13",
     "PCB Layout",
     "ECU PROJECT",
     [
@@ -268,7 +268,7 @@ const raw = [
     "PCB 배치 순서를 어떻게 정했는가?",
   ],
   [
-    "12/7–12/13",
+    "12/14–12/20",
     "Review / PCB 제작",
     "BUILD",
     [
@@ -282,7 +282,7 @@ const raw = [
     "DRC와 ERC의 차이는?",
   ],
   [
-    "12/14–12/20",
+    "12/21–12/27",
     "Bring-up / Measurement",
     "BUILD",
     [
@@ -296,7 +296,7 @@ const raw = [
     "첫 전원 인가 전 무엇을 확인하는가?",
   ],
   [
-    "12/21–12/27",
+    "12/28–1/3",
     "Debugging",
     "VALIDATION",
     [
@@ -309,7 +309,7 @@ const raw = [
     "회로 문제에 어떻게 접근하는가?",
   ],
   [
-    "12/28–12/31",
+    "1/4–1/10",
     "Portfolio 완성",
     "PORTFOLIO",
     [
@@ -376,7 +376,13 @@ const skillNames = [
 
 export default function App() {
   const [view, setView] = useState<View>("dashboard"),
-    [week, setWeek] = useState(1),
+    [week, setWeek] = useState(() => {
+      const elapsed = Math.floor(
+        (Date.now() - new Date("2026-08-24T00:00:00+09:00").getTime()) /
+          604800000,
+      );
+      return Math.min(20, Math.max(1, elapsed + 1));
+    }),
     [menu, setMenu] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>(() =>
     JSON.parse(localStorage.getItem("ahw-done") || "{}"),
@@ -693,7 +699,18 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
   const dateKey = new Date(now.getTime() - offset * 60000)
     .toISOString()
     .slice(0, 10);
-  const schedule = schedules[now.getDay()];
+  const schedule =
+    now < new Date("2026-08-24T00:00:00+09:00")
+      ? {
+          day: "준비 주간",
+          focus: "밀린 일 정리 대신 새 출발 준비",
+          events: [
+            ["20분", "학습 공간과 필요한 프로그램 점검"],
+            ["20분", "다음 주 목표를 최대 3개로 정리"],
+            ["나머지", "충분히 쉬고 월요일부터 시작"],
+          ],
+        }
+      : schedules[now.getDay()];
   const defaultTasks = schedule.events.map((event, i) => ({
     id: `${dateKey}-${i}`,
     text: event[1],
@@ -865,6 +882,7 @@ function Dashboard({
             WEEK {current.n} <i>/ 20</i>
           </strong>
           <span>{current.title}</span>
+          <span>{current.dates}</span>
         </article>
         <article>
           <small>WEEKLY COMPLETION</small>
@@ -883,6 +901,16 @@ function Dashboard({
           <strong>D-{internshipD}</strong>
           <span>한국알프스 R&D</span>
         </article>
+      </section>
+      <section className="restart-banner">
+        <div>
+          <small>CURRICULUM RESTART</small>
+          <b>2026년 8월 24일 월요일부터 WEEK 1 재시작</b>
+        </div>
+        <p>
+          이번 주 미완료분은 누적하지 않습니다. 주말에는 환경 점검과 다음 주
+          핵심 목표 3개만 준비하고, 20주 과정은 2027년 1월 10일까지 진행합니다.
+        </p>
       </section>
       <DailyAgenda go={go} />
       <section className="dash">
@@ -942,8 +970,14 @@ function Study({
   return (
     <Page
       title="Weekly Study"
-      sub="기초 → 실습 → 자동차 적용 → 설명까지, 매주 결과물을 남깁니다."
+      sub="2026년 8월 24일부터 기초 → 실습 → 자동차 적용 → 설명 순서로 다시 시작합니다."
     >
+      <article className="study-restart">
+        <b>새 시작 원칙</b>
+        <span>지난주 미완료 작업을 그대로 쌓지 않기</span>
+        <span>WEEK 1부터 순서대로 진행</span>
+        <span>평일 최대 2시간·주간 핵심 목표 최대 3개</span>
+      </article>
       <div className="study">
         <div className="timeline">
           {weeks.map((w) => (

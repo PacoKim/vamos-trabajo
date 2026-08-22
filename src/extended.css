@@ -67,6 +67,56 @@
   gap: 16px;
   padding: 0 4vw 18px;
 }
+.restart-banner {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) 1.5fr;
+  gap: 20px;
+  align-items: center;
+  margin: 0 4vw 16px;
+  padding: 16px 20px;
+  border-left: 4px solid #83a950;
+  background: #173027;
+  color: white;
+}
+.restart-banner > div {
+  display: grid;
+  gap: 4px;
+}
+.restart-banner small {
+  color: #b8e16d;
+  font: 700 9px Manrope;
+  letter-spacing: 0.12em;
+}
+.restart-banner b {
+  font-size: 12px;
+}
+.restart-banner p {
+  margin: 0;
+  color: #aec0b7;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.study-restart {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+  padding: 14px 17px;
+  background: #173027;
+  color: white;
+}
+.study-restart b {
+  min-width: max-content;
+  color: #b8e16d;
+  font-size: 11px;
+}
+.study-restart span {
+  min-width: max-content;
+  padding: 7px 9px;
+  background: #29493c;
+  font-size: 9px;
+}
 .daily-overview > article {
   border: 1px solid #dce3dd;
   background: white;
@@ -694,6 +744,11 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .restart-banner {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin: 14px;
+  }
   .hero {
     min-height: 0;
     padding: 29px 20px 35px;
