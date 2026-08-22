@@ -603,14 +603,20 @@ const parallelTracks = (week: Week) => {
   const automotive = n <= 4 ? "자동차 전장 용어 2개와 강의 내용 연결" : n <= 8 ? "차량 전원·보호 또는 CAN 개념 30분" : n <= 12 ? "Guided 회로를 자동차 환경 기준으로 비교" : "CAN·차량 전원·EMC Evidence 1개 보완";
   const independent = n <= 4 ? "CAN Sensor ECU 요구사항 아이디어 1개 기록" : n <= 8 ? "CAN Sensor ECU Block·후보 부품 1개 검토" : n <= 12 ? "독립 프로젝트 요구사항·검증 기준 1개 확정" : n <= 15 ? "자동차 확장 내용을 ECU 설계에 반영" : "CAN Sensor ECU 설계·측정·문서화 진행";
   return [
-    ["GUIDED COURSE", "배정한 전동킥보드 Lecture 학습과 노트"],
-    ["HW PRACTICE", `${week.title} 관련 계산·회로·Firmware·측정 중 1개`],
-    ["AUTOMOTIVE", automotive],
-    ["INDEPENDENT", independent],
-    ["EMPLOYMENT", "주간 결과물·면접 답변·포트폴리오 근거 1개"],
-    ["ENGLISH · APTITUDE", "통근 영어 3회 이상·인적성 2회 이상"],
+    ["전동킥보드 강의", "배정한 전동킥보드 강의 학습과 노트"],
+    ["HW 실습", `${week.title} 관련 계산·회로·펌웨어·측정 중 1개`],
+    ["자동차 전장", automotive],
+    ["독립 프로젝트", independent],
+    ["취업 준비", "주간 결과물·면접 답변·포트폴리오 근거 1개"],
+    ["영어·인적성", "통근 영어 3회 이상·인적성 2회 이상"],
   ];
 };
+const koreanPhase = (phase: string) => ({
+  "GUIDED HW PROJECT": "교육 기반 HW 프로젝트",
+  "AUTOMOTIVE HW EXTENSION": "자동차 전장 확장",
+  "INDEPENDENT PROJECT": "독립 프로젝트",
+  "EMPLOYMENT PREPARATION": "취업 준비",
+}[phase] || phase);
 const optimizedDailySchedule = [
   {
     day: "일요일", type: "보충·회고·재계획", focus: "다음 주를 가볍게 만드는 날",
@@ -723,7 +729,7 @@ export default function App() {
         <div className="logo">
           <span>AH</span>
           <b>
-            AUTOMOTIVE<small>HW R&D PREP</small>
+            자동차 전장<small>HW R&D 취업 준비</small>
           </b>
         </div>
         <nav>
@@ -976,12 +982,11 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     track,
     minimum: true,
   }));
-  const defaultTasks = minimumTasks.map((task, i) => ({
-    id: `daily-v2-${dateKey}-${i}`,
-    ...task,
-    done: false,
-  }));
+  const defaultTasks: any[] = [];
   const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
+    if (localStorage.getItem("ahw-daily-items-cleared-v1") !== "done") {
+      return { [dateKey]: [] };
+    }
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
     );
@@ -994,8 +999,10 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
   const [newTask, setNewTask] = useState("");
   const tasks = allTasks[dateKey] || [];
   useEffect(
-    () =>
-      localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks)),
+    () => {
+      localStorage.setItem("ahw-daily-items-cleared-v1", "done");
+      localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks));
+    },
     [allTasks],
   );
   const setTasks = (next: any[]) =>
@@ -1041,7 +1048,7 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
       <article className="today-schedule">
         <div className="daily-heading">
           <div>
-            <small>TODAY · {dateKey.replaceAll("-", ".")}</small>
+            <small>오늘 · {dateKey.replaceAll("-", ".")}</small>
             <h2>{schedule.day} 일정</h2>
           </div>
           <span>{schedule.focus}</span>
@@ -1059,8 +1066,8 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
       <article className="daily-checklist">
         <div className="daily-heading">
           <div>
-            <small>DAILY CHECKLIST</small>
-            <h2>취업 최소 체크리스트</h2>
+            <small>일일 체크리스트</small>
+            <h2>오늘 할 일</h2>
           </div>
           <strong>
             {completed}/{tasks.length}
@@ -1122,7 +1129,7 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
         <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
           <div className="catchup-heading">
             <div>
-              <small>{isWeekend ? "WEEKEND CATCH-UP" : "WEEKEND QUEUE"}</small>
+              <small>{isWeekend ? "주말 보충" : "주말 보충 예정"}</small>
               <h3>{isWeekend ? "이번 주 미완료 보충" : "주말 보충 예정"}</h3>
             </div>
             <strong>{catchUpTasks.length}개</strong>
@@ -1171,7 +1178,7 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
   const current = lectures.find((x: any) => !x.steps?.watch && x.status !== "완료") || {
     number: 1,
     title: "실제 강의 제목을 입력하세요",
-    section: "Section 미입력",
+    section: "구역 미입력",
     steps: {},
   };
   const total = lectures.length || 159;
@@ -1204,34 +1211,34 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
   return (
     <section className="course-snapshot">
       <div>
-        <small>CURRENT PHASE · GUIDED HW PROJECT</small>
-        <h2>전동킥보드 Embedded Project</h2>
-        <p>BLDC Motor Controller · 인프런 · {total}강 관리</p>
+        <small>현재 단계 · 교육 기반 HW 프로젝트</small>
+        <h2>전동킥보드 임베디드 프로젝트</h2>
+        <p>BLDC 모터 제어기 · 인프런 · {total}강 관리</p>
       </div>
       <div className="course-snapshot-stats">
         <span>
-          <b>{completed}/{total}</b>Lectures
+          <b>{completed}/{total}</b>강의
         </span>
         <span>
-          <b>{video}%</b>Video
+          <b>{video}%</b>시청
         </span>
         <span>
-          <b>{mastery}%</b>Mastery
+          <b>{mastery}%</b>숙련도
         </span>
         <span>
-          <b>{hwSkill}%</b>HW Skill
+          <b>{hwSkill}%</b>HW 역량
         </span>
         <span>
-          <b>{automotiveSkill}%</b>Automotive
+          <b>{automotiveSkill}%</b>자동차 전장
         </span>
         <span>
-          <b>{independentEvidence}%</b>Independent
+          <b>{independentEvidence}%</b>독립 프로젝트
         </span>
       </div>
       <div className="today-hw-study">
-        <small>TODAY'S HW STUDY</small>
+        <small>오늘의 HW 학습</small>
         <b>
-          Lecture {current.number} · {current.title}
+          강의 {current.number} · {current.title}
         </b>
         <span>{current.section}</span>
         <p>오늘의 질문: 강의에서 제공된 것과 내가 직접 수행한 것은 무엇인가?</p>
@@ -1266,25 +1273,25 @@ function Dashboard({
     <>
       <section className="hero">
         <div>
-          <p className="eyebrow">2026 NEW GRADUATE ROADMAP</p>
+          <p className="eyebrow">2026 신입 취업 로드맵</p>
           <h1>
-            AUTOMOTIVE
+            자동차 전장
             <br />
-            <em>HW R&D PREP</em>
+            <em>HW R&D 취업 준비</em>
           </h1>
           <p>이론을 아는 사람에서, 직접 설계하고 설명할 수 있는 엔지니어로.</p>
         </div>
         <aside className="target">
-          <small>TARGET COMPANIES</small>
+          <small>목표 기업</small>
           {["01  현대자동차", "02  현대모비스", "03  기아"].map((x) => (
             <b key={x}>{x}</b>
           ))}
           <hr />
-          <small>TARGET ROLE</small>
+          <small>목표 직무</small>
           <p>
-            Automotive R&D · Electronic Hardware
+            자동차 R&D · 전자 하드웨어
             <br />
-            Circuit Design · ECU Hardware
+            회로 설계 · ECU 하드웨어
             <br />
             PCB / MCU / CAN
           </p>
@@ -1292,34 +1299,34 @@ function Dashboard({
       </section>
       <section className="metrics">
         <article>
-          <small>CURRENT CURRICULUM</small>
+          <small>현재 교육과정</small>
           <strong>
-            WEEK {current.n} <i>/ 20</i>
+            {current.n}주차 <i>/ 20</i>
           </strong>
           <span>{current.title}</span>
           <span>{current.dates}</span>
         </article>
         <article>
-          <small>WEEKLY COMPLETION</small>
+          <small>주간 완료율</small>
           <strong>{wp}%</strong>
           <div className="bar">
             <i style={{ width: wp + "%" }} />
           </div>
         </article>
         <article>
-          <small>INDEPENDENT PROJECT</small>
+          <small>독립 프로젝트</small>
           <strong>{progress}%</strong>
           <span>CAN Sensor ECU</span>
         </article>
         <article>
-          <small>INTERNSHIP D-DAY</small>
+          <small>인턴 종료일까지</small>
           <strong>D-{internshipD}</strong>
           <span>한국알프스 R&D</span>
         </article>
       </section>
       <section className="restart-banner">
         <div>
-          <small>CURRICULUM RESTART</small>
+          <small>교육과정 운영 원칙</small>
           <b>전동킥보드 Guided Project 중심 20주 과정</b>
         </div>
         <p>
@@ -1331,7 +1338,7 @@ function Dashboard({
       <DailyAgenda go={go} />
       <section className="dash priorities-only">
         <article className="panel job-priorities">
-          <small>JOB PREPARATION PRIORITY</small>
+          <small>취업 준비 우선순위</small>
           <h2>지금 취업을 위해 먼저 확인할 것</h2>
           {[
             [
@@ -1400,7 +1407,7 @@ function Study({
   const weekRate = Math.round(((mainCompleted + trackCompleted) / (current.tasks.length + tracks.length)) * 100);
   return (
     <Page
-      title="Weekly Study"
+      title="20주 학습 계획"
       sub="전동킥보드 강의를 중심으로 HW 실습·자동차 확장·독립 프로젝트·영어·취업 준비를 매주 병렬로 진행합니다."
     >
       <article className="study-restart">
@@ -1426,7 +1433,7 @@ function Study({
               <span>
                 {w.title}
                 <small>
-                  {w.dates} · {w.phase}
+                  {w.dates} · {koreanPhase(w.phase)}
                 </small>
               </span>
             </button>
@@ -1436,16 +1443,16 @@ function Study({
           <div className="weekhead">
             <div>
               <small>
-                WEEK {String(week).padStart(2, "0")} · {current.dates}
+                {String(week).padStart(2, "0")}주차 · {current.dates}
               </small>
               <h2>{current.title}</h2>
-              <b>{current.phase}</b>
+              <b>{koreanPhase(current.phase)}</b>
             </div>
             <strong>
               {weekRate}%
             </strong>
           </div>
-          <h3>STUDY & PRACTICE</h3>
+          <h3>핵심 학습과 실습</h3>
           <div className="checks">
             {current.tasks.map((t, i) => {
               const id = `w${week}-${i}`;
@@ -1462,7 +1469,7 @@ function Study({
               );
             })}
           </div>
-          <h3>PARALLEL TRACKS · 매주 끊기지 않게</h3>
+          <h3>병렬 학습 · 매주 끊기지 않게</h3>
           <div className="parallel-track-checks">
             {tracks.map(([name, task], i) => {
               const id = `p${week}-${i}`;
@@ -1474,7 +1481,7 @@ function Study({
             })}
           </div>
           <div className="deliver">
-            <small>WEEKLY DELIVERABLE</small>
+            <small>주간 결과물</small>
             {current.deliverables.map((x) => (
               <b key={x}>↗ {x}</b>
             ))}
@@ -1482,7 +1489,7 @@ function Study({
           <div className="question">
             <FileQuestion />
             <div>
-              <small>INTERVIEW QUESTION</small>
+              <small>예상 면접 질문</small>
               <b>{current.question}</b>
             </div>
           </div>
@@ -1776,7 +1783,7 @@ function Applications() {
 function Skills({ completed }: { completed: number }) {
   return (
     <Page
-      title="Engineering Skills"
+      title="직무 역량"
       sub="체크 하나로 숙련도가 완성되지 않습니다. 다섯 축으로 증거를 쌓습니다."
     >
       <div className="skills">
@@ -1788,7 +1795,7 @@ function Skills({ completed }: { completed: number }) {
               "Simulation",
               "Implementation",
               "Measurement",
-              "Can Explain",
+              "설명 가능",
             ].map((x, j) => {
               const v = Math.min(
                 90,
@@ -1994,7 +2001,7 @@ function Journal({
       )}
       <section className="bank-section">
         <div className="section-heading">
-          <small>EXPERIENCE BANK</small>
+          <small>경험 보관함</small>
           <h2>저장된 경험과 자소서 활용법</h2>
           <p>
             카드를 눌러 STAR 구조, 추천 문항과 저장한 GPT 답변을 확인하세요.
@@ -2247,7 +2254,7 @@ function Project({ go }: { go: (v: View) => void }) {
       <article className="panel project">
         <div className="project-head">
           <div>
-            <small>PROJECT PROGRESS</small>
+            <small>프로젝트 진행률</small>
             <h2>Version 1 → Measurement & Improvement</h2>
           </div>
           <strong>{p}%</strong>
@@ -2376,7 +2383,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                   >
                     <div className="edit-heading">
                       <div>
-                        <small>SAVED EXPERIENCE EDIT</small>
+                        <small>저장한 경험 수정</small>
                         <h3>저장한 경험 수정</h3>
                       </div>
                       <span>수정 내용은 이 기기에 자동 반영됩니다.</span>
@@ -2523,7 +2530,7 @@ function Review({ completed, total }: { completed: number; total: number }) {
     >
       <div className="review-grid">
         <article className="panel score">
-          <small>WEEKLY COMPLETION</small>
+          <small>주간 완료율</small>
           <strong>{rate}%</strong>
           <div className="bar">
             <i style={{ width: rate + "%" }} />
@@ -2559,7 +2566,7 @@ function Review({ completed, total }: { completed: number; total: number }) {
         <small>자동 저장됨</small>
       </article>
       <article className="panel course-review">
-        <small>GUIDED PROJECT WEEKLY REVIEW</small>
+        <small>교육 프로젝트 주간 회고</small>
         <h2>전동킥보드 강의가 실제 HW 역량으로 바뀌었는지 확인</h2>
         <div>
           {[
