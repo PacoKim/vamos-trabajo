@@ -1,662 +1,83 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  BookOpen,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  FileText,
-  Plus,
-  Save,
-  Target,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronUp, ExternalLink, FileText, Plus, Target, Upload } from "lucide-react";
 import "./courses.css";
 
-export const COURSE_URL =
-  "https://www.inflearn.com/course/pcb-hw%EC%84%A4%EA%B3%84%EC%8B%A4%EB%AC%B4-stm32";
-export const COURSE_KEY = "ahw-course-main";
-export const LECTURES_KEY = "ahw-course-lectures";
-export const EVIDENCE_KEY = "ahw-course-evidence";
+export const COURSE_URL = "https://www.inflearn.com/course/%EC%A0%84%EB%8F%99%ED%82%A5%EB%B3%B4%EB%93%9C%EA%B0%9C%EB%B0%9C-%EC%9E%84%EB%B2%A0%EB%94%94%EB%93%9C-%EA%B0%9C%EB%B0%9C%EC%9E%90";
+export const COURSE_KEY = "ahw-kickboard-course-v1";
+export const LECTURES_KEY = "ahw-kickboard-lectures-v1";
+export const EVIDENCE_KEY = "ahw-kickboard-evidence-v1";
 
-const sections = [
-  [1, 1, "Orientation", "HW 경험이 취업에서 필요한 이유"],
-  [
-    2,
-    7,
-    "PCB HW 설계와 System-level 이해",
-    "Power·Signal Flow와 HW 설계 프로세스",
-  ],
-  [
-    8,
-    16,
-    "Requirement 분석과 부품 선택",
-    "요구사항·MCU·PHY·ADC·Motor·MOSFET·Block Diagram",
-  ],
-  [
-    17,
-    33,
-    "Power Budget·MCU Schematic",
-    "Power Tree·STM32 전원·Clock·Reset·Debug",
-  ],
-  [34, 40, "PHY Schematic", "Ethernet PHY·ESD·Bead·Interface"],
-  [41, 50, "Motor Driver·ADC·DAC", "Driver·MOSFET·Analog Interface"],
-  [51, 59, "MIC·LDO Schematic", "Analog Power·Noise·PSRR·Signal Quality"],
-  [
-    60,
-    76,
-    "Mixed-Signal Board Layout",
-    "Placement·GND·Return Path·EMI/ESD·3D 검토",
-  ],
-] as const;
-const known: Record<number, string> = {
-  1: "취준생과 현직자에게 PCB HW 경험이 필수인 이유",
-  2: "System-level 이란?",
-  3: "PCB HW 직무기술서 파헤쳐보기",
-  4: "PCB HW 설계 Flow",
-  5: "Analog 회로에서 System-level 찾아보기",
-  6: "Digital 회로에서 System-level 찾아보기",
-  7: "[과제1] Power & Signal Flow Exploration",
-  8: "Requirement Sheet 분석하기",
-  9: "Micro-controller & Debugger 선택하기",
-  10: "Ethernet PHY 선택하기",
-  11: "ADC & TTL 선택하기",
-  12: "Motor Driver 선택하기",
-  13: "MOSFET 선택하기",
-  14: "DAC / MIC / I2C Interface 선택하기",
-  15: "Block Diagram 작성하기",
-  16: "[과제2] IC Device Study + Block Diagram",
-};
-const skillFor = (section: string) =>
-  section.includes("Power")
-    ? "Automotive Power"
-    : section.includes("PHY")
-      ? "EMI·ESD Protection"
-      : section.includes("Motor")
-        ? "Power Electronics"
-        : section.includes("MIC")
-          ? "Analog Electronics"
-          : section.includes("Layout")
-            ? "PCB Design"
-            : section.includes("Requirement")
-              ? "Component Selection"
-              : "MCU Hardware";
-export const makeLectures = () =>
-  Array.from({ length: 76 }, (_, i) => {
-    const n = i + 1,
-      s = sections.find((x) => n >= x[0] && n <= x[1])!;
-    return {
-      id: `lecture-${n}`,
-      number: n,
-      section: s[2],
-      title: known[n] || `${s[2]} · Lecture ${n}`,
-      duration: 0,
-      status: "시작 전",
-      difficulty: "보통",
-      studyDate: "",
-      studyMinutes: 0,
-      understanding: 0,
-      steps: {
-        watch: false,
-        understand: false,
-        practice: false,
-        explain: false,
-        apply: false,
-      },
-      memo: "",
-      notes: {
-        learned: "",
-        concept: "",
-        circuit: "",
-        parts: "",
-        datasheet: "",
-        whyPart: "",
-        whyValue: "",
-        unknown: "",
-        next: "",
-        internship: "",
-        automotive: "",
-        interview: "",
-      },
-      skill: skillFor(s[2]),
-      project: "STM32 Mixed-Signal Board Design",
-      practice: "",
-      extension: "",
-    };
-  });
-const defaultCourse = {
-  title: "PCB HW설계 실무 : STM32를 활용한 Mixed-signal 보드 설계 프로젝트",
-  platform: "인프런",
-  totalLectures: 76,
-  totalMinutes: 918,
-  startDate: "2026-09-01",
-  targetDate: "2026-10-31",
-  lastStudyDate: "",
-  weeklyGoal: "주 2~4시간: 강의 1~2시간 + 회로 분석·실습·Evidence",
-  currentSection: "Orientation",
-  relatedSkills: [
-    "MCU Hardware",
-    "Circuit Design",
-    "Automotive Power",
-    "EMI·ESD",
-    "PCB Design",
-  ],
-  trainingProject: "STM32 Mixed-Signal Board Design",
-  independentProject: "Automotive CAN Sensor ECU",
-};
-const questions = [
-  "왜 이 회로가 필요한가?",
-  "왜 이 부품인가?",
-  "왜 이 값인가?",
-  "다른 부품으로 변경하면 어떻게 되는가?",
-  "정격은 어떻게 선정했는가?",
-  "Datasheet에서 어떤 Parameter를 확인해야 하는가?",
-  "고장나면 어떤 현상이 발생할 수 있는가?",
-  "어떻게 측정해서 정상 동작을 확인할 수 있는가?",
-  "자동차 환경이라면 무엇을 추가로 고려해야 하는가?",
+const skillAreas = ["Circuit Fundamentals", "Electronic Components", "STM32", "MCU Peripheral", "C / Embedded Firmware", "Power Electronics", "MOSFET", "Gate Driver", "Buck Converter", "3-Phase Inverter", "BLDC Motor", "Current Sensing", "PCB Design", "4-Layer PCB", "Power / Ground", "Noise", "Measurement", "Debugging"];
+const evidenceTypes = ["Block Diagram", "Circuit Calculation", "Datasheet Analysis", "Schematic", "PCB", "Firmware", "Measurement", "Debugging", "Technical Note", "Portfolio"];
+const phases = [
+  ["PHASE 1", "Guided HW Project", "2026.08–10", "전동킥보드 개발 과정을 따라가며 HW 개발 전체 흐름을 경험"],
+  ["PHASE 2", "Automotive HW Extension", "2026.10–11", "CAN·LIN·차량 전원·보호·EMC·ESD 확장"],
+  ["PHASE 3", "Independent Automotive HW Project", "2026.11–12", "Automotive CAN Sensor ECU를 요구사항부터 독립 설계"],
+  ["PHASE 4", "Employment Preparation", "2026.12 이후", "포트폴리오·자소서·기술/인성면접·인적성"],
 ];
-const eightWeeks = [
-  ["9/1–9/6", "Orientation·System-level", "L1–7", "Power·Signal Flow 1장"],
-  ["9/7–9/13", "Requirement·부품 선택 I", "L8–12", "Requirement와 후보 부품표"],
-  [
-    "9/14–9/20",
-    "부품 선택 II·Block Diagram",
-    "L13–16",
-    "Block Diagram·Datasheet 근거",
-  ],
-  [
-    "9/21–9/27",
-    "Power Budget·STM32 I",
-    "L17–24",
-    "Power Budget·MCU Power Tree",
-  ],
-  ["9/28–10/4", "STM32 Schematic II", "L25–33", "Clock·Reset·Debug 회로 설명"],
-  ["10/5–10/11", "PHY·ESD·EMI", "L34–40", "ESD Path·Protection 배치 노트"],
-  [
-    "10/12–10/18",
-    "Motor·ADC·DAC·LDO",
-    "L41–59",
-    "부품 선정표·Analog Power 분석",
-  ],
-  [
-    "10/19–10/31",
-    "Mixed-Signal Layout·종합",
-    "L60–76",
-    "Layout Review·Training Report",
-  ],
-];
-const conversion = [
-  ["STM32 Power", "ECU MCU Power·Power Budget"],
-  ["Decoupling", "Power Integrity·EMC"],
-  ["ESD", "Vehicle Input·CAN Protection"],
-  ["Motor Driver", "Automotive Load Driver"],
-  ["ADC", "Vehicle Sensor Input"],
-  ["PCB Layout", "ECU Placement·Return Path"],
-];
-const noteLabels: Record<string, string> = {
-  learned: "오늘 배운 내용",
-  concept: "핵심 개념",
-  circuit: "중요한 회로",
-  parts: "중요한 부품",
-  datasheet: "Datasheet 확인",
-  whyPart: "왜 이 부품인가?",
-  whyValue: "왜 이 값인가?",
-  unknown: "이해하지 못한 부분",
-  next: "추가 공부",
-  internship: "인턴 경험 연결(기밀 제외)",
-  automotive: "자동차 전장 적용",
-  interview: "예상 면접 질문",
-};
-function load<T>(key: string, fallback: T): T {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : fallback;
-  } catch {
-    return fallback;
-  }
-}
+const defaultCourse = { title: "전동킥보드로 배우는 임베디드 실전 프로젝트", platform: "인프런", category: "GUIDED PROJECT", totalLectures: 159, officialLectureCount: 152, startDate: "2026-08-24", targetDate: "2026-10-31", weeklyGoal: "핵심 목표 최대 3개 · 강의 진도보다 이해와 결과물 우선", guidedProject: "Electric Kickboard BLDC Motor Controller", independentProject: "Automotive CAN Sensor ECU" };
+const emptyNotes = { learned: "", practiced: "", unknown: "", problem: "", hypothesis: "", attempt: "", result: "", internship: "", automotive: "", interview: "" };
+export const makeLectures = (count = 159) => Array.from({ length: count }, (_, i) => ({ id: `kickboard-lecture-${i + 1}`, number: i + 1, section: "", title: "", duration: 0, assignedWeek: 0, status: "시작 전", difficulty: "보통", studyDate: "", studyMinutes: 0, steps: { watch: false, understand: false, practice: false, explain: false, apply: false }, memo: "", skill: "", notes: { ...emptyNotes } }));
+const load = <T,>(key: string, fallback: T): T => { try { const value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback; } catch { return fallback; } };
+const normalizeLecture = (row: any, index: number) => ({ id: row.id || `kickboard-lecture-${row.number || index + 1}`, number: Number(row.number || row.lectureNumber || index + 1), section: row.section || "", title: row.title || "", duration: Number(row.duration || 0), assignedWeek: Number(row.assignedWeek || row.week || 0), status: row.status || "시작 전", difficulty: row.difficulty || "보통", studyDate: row.studyDate || "", studyMinutes: Number(row.studyMinutes || row.studyTime || 0), steps: { watch: false, understand: false, practice: false, explain: false, apply: false, ...(row.steps || {}) }, memo: row.memo || "", skill: row.skill || "", notes: { ...emptyNotes, ...(row.notes || {}) } });
 
-export default function CourseManager({
-  onQuickNote,
-}: {
-  onQuickNote: (text: string, date: string) => void;
-}) {
+export default function CourseManager({ onQuickNote }: { onQuickNote: (text: string, date: string) => void }) {
   const [course, setCourse] = useState(() => load(COURSE_KEY, defaultCourse));
-  const [lectures, setLectures] = useState<any[]>(() =>
-    load(LECTURES_KEY, makeLectures()),
-  );
+  const [lectures, setLectures] = useState<any[]>(() => load(LECTURES_KEY, makeLectures()));
   const [evidence, setEvidence] = useState<any[]>(() => load(EVIDENCE_KEY, []));
-  const [open, setOpen] = useState<number | null>(1),
-    [filter, setFilter] = useState("전체"),
-    [newEvidence, setNewEvidence] = useState({
-      title: "",
-      type: "Datasheet Analysis",
-      description: "",
-    });
-  useEffect(
-    () => localStorage.setItem(COURSE_KEY, JSON.stringify(course)),
-    [course],
-  );
-  useEffect(
-    () => localStorage.setItem(LECTURES_KEY, JSON.stringify(lectures)),
-    [lectures],
-  );
-  useEffect(
-    () => localStorage.setItem(EVIDENCE_KEY, JSON.stringify(evidence)),
-    [evidence],
-  );
-  const update = (n: number, patch: any) =>
-    setLectures((v) => v.map((x) => (x.number === n ? { ...x, ...patch } : x)));
-  const completed = lectures.filter((x) => x.status === "완료").length,
-    video = Math.round((completed / 76) * 100);
-  const mastery = Math.round(
-    (lectures.reduce(
-      (sum, x) => sum + Object.values(x.steps).filter(Boolean).length,
-      0,
-    ) /
-      (76 * 5)) *
-      100,
-  );
-  const studyTime = lectures.reduce(
-    (sum, x) => sum + Number(x.studyMinutes || 0),
-    0,
-  );
-  const current = lectures.find((x) => x.status !== "완료") || lectures[75];
-  const list =
-    filter === "전체" ? lectures : lectures.filter((x) => x.section === filter);
-  const saveEvidence = (e: React.FormEvent) => {
-    e.preventDefault();
-    const item = {
-      ...newEvidence,
-      id: Date.now(),
-      createdAt: new Date().toISOString().slice(0, 10),
-    };
-    setEvidence([...evidence, item]);
-    setNewEvidence({ title: "", type: "Datasheet Analysis", description: "" });
+  const [open, setOpen] = useState<number | null>(1);
+  const [filter, setFilter] = useState("전체");
+  const [search, setSearch] = useState("");
+  const [importText, setImportText] = useState("");
+  const [importMessage, setImportMessage] = useState("");
+  const [newEvidence, setNewEvidence] = useState({ title: "", type: "Block Diagram", description: "", skill: "", project: "Course", interview: false, resume: false });
+  useEffect(() => localStorage.setItem(COURSE_KEY, JSON.stringify(course)), [course]);
+  useEffect(() => localStorage.setItem(LECTURES_KEY, JSON.stringify(lectures)), [lectures]);
+  useEffect(() => localStorage.setItem(EVIDENCE_KEY, JSON.stringify(evidence)), [evidence]);
+  const update = (number: number, patch: any) => setLectures((items) => items.map((item) => item.number === number ? { ...item, ...patch } : item));
+  const watched = lectures.filter((x) => x.steps.watch || x.status === "완료").length;
+  const video = Math.round((watched / Math.max(lectures.length, 1)) * 100);
+  const mastery = Math.round((lectures.reduce((sum, x) => sum + ["understand", "practice", "explain", "apply"].filter((key) => x.steps[key]).length, 0) / Math.max(lectures.length * 4, 1)) * 100);
+  const hwSkill = Math.round((lectures.filter((x) => x.steps.practice || x.steps.explain).length / Math.max(lectures.length, 1)) * 100);
+  const automotive = Math.round((lectures.filter((x) => x.steps.apply || x.notes.automotive.trim()).length / Math.max(lectures.length, 1)) * 100);
+  const independent = Math.min(100, evidence.filter((x) => x.project === "Independent Project").length * 10);
+  const employment = Math.min(100, evidence.filter((x) => x.interview || x.resume).length * 10);
+  const studyTime = lectures.reduce((sum, x) => sum + Number(x.studyMinutes || 0), 0);
+  const sections = useMemo(() => [...new Set<string>(lectures.map((x) => x.section).filter(Boolean))], [lectures]);
+  const list = lectures.filter((x) => { const matches = filter === "전체" || (filter === "미배정" ? !x.assignedWeek : x.section === filter); const q = search.trim().toLowerCase(); return matches && (!q || `${x.number} ${x.section} ${x.title} ${x.skill}`.toLowerCase().includes(q)); });
+  const resizeLectures = (count: number) => { const safe = Math.max(1, Math.min(500, count || 1)); setCourse({ ...course, totalLectures: safe }); setLectures((items) => safe > items.length ? [...items, ...makeLectures(safe).slice(items.length)] : items.slice(0, safe)); };
+  const importLectures = () => {
+    try {
+      const trimmed = importText.trim(); if (!trimmed) return;
+      let rows: any[];
+      if (trimmed.startsWith("[") || trimmed.startsWith("{")) { const parsed = JSON.parse(trimmed); rows = Array.isArray(parsed) ? parsed : parsed.lectures; }
+      else { const lines = trimmed.split(/\r?\n/).filter(Boolean); const headers = lines[0].split(",").map((x) => x.trim().toLowerCase()); rows = lines.slice(1).map((line) => { const cells = line.split(",").map((x) => x.trim().replace(/^"|"$/g, "")); const get = (...keys: string[]) => cells[headers.findIndex((h) => keys.includes(h))] || ""; return { number: get("number", "lecturenumber", "lecture number"), section: get("section"), title: get("title"), duration: get("duration"), assignedWeek: get("week", "assignedweek", "assigned week") }; }); }
+      if (!Array.isArray(rows)) throw new Error("목록 형식이 아닙니다.");
+      const imported = rows.map(normalizeLecture); const merged = [...lectures];
+      imported.forEach((item) => { const index = merged.findIndex((x) => x.number === item.number); if (index >= 0) merged[index] = { ...merged[index], ...item, steps: { ...merged[index].steps, ...item.steps }, notes: { ...merged[index].notes, ...item.notes } }; else merged.push(item); });
+      merged.sort((a, b) => a.number - b.number); setLectures(merged); setCourse({ ...course, totalLectures: merged.length }); setImportMessage(`${imported.length}개 강의를 불러왔습니다.`); setImportText("");
+    } catch (error) { setImportMessage(`불러오기 실패: ${error instanceof Error ? error.message : "형식을 확인하세요."}`); }
   };
-  return (
-    <section className="page courses-page">
-      <div className="course-hero">
-        <div>
-          <small>CURRENT COURSE · TRAINING PROJECT</small>
-          <h1>PCB HW설계 실무</h1>
-          <p>{course.title}</p>
-          <a href={COURSE_URL} target="_blank" rel="noreferrer">
-            인프런 강의 열기 <ExternalLink />
-          </a>
-        </div>
-        <div className="course-numbers">
-          <span>
-            <b>{completed}/76</b>강의 완료
-          </span>
-          <span>
-            <b>{video}%</b>Video Progress
-          </span>
-          <span>
-            <b>{mastery}%</b>Mastery
-          </span>
-          <span>
-            <b>
-              {Math.floor(studyTime / 60)}h {studyTime % 60}m
-            </b>
-            실제 학습시간
-          </span>
-        </div>
-      </div>
-      <section className="course-meta">
-        <label>
-          시작일
-          <input
-            type="date"
-            value={course.startDate}
-            onChange={(e) =>
-              setCourse({ ...course, startDate: e.target.value })
-            }
-          />
-        </label>
-        <label>
-          목표 완료일
-          <input
-            type="date"
-            value={course.targetDate}
-            onChange={(e) =>
-              setCourse({ ...course, targetDate: e.target.value })
-            }
-          />
-        </label>
-        <label>
-          이번 주 목표
-          <input
-            value={course.weeklyGoal}
-            onChange={(e) =>
-              setCourse({ ...course, weeklyGoal: e.target.value })
-            }
-          />
-        </label>
-        <div>
-          <small>현재 Section</small>
-          <b>{current.section}</b>
-        </div>
-        <div>
-          <small>관련 독립 프로젝트</small>
-          <b>Automotive CAN Sensor ECU</b>
-        </div>
-      </section>
-      <section className="course-section">
-        <div className="course-heading">
-          <div>
-            <small>SEPTEMBER → OCTOBER</small>
-            <h2>8주 완주 계획</h2>
-            <p>
-              15시간 영상을 15시간 만에 끝내지 않고 매주 취업 Evidence를
-              남깁니다.
-            </p>
-          </div>
-        </div>
-        <div className="course-weeks">
-          {eightWeeks.map((w, i) => (
-            <article key={w[0]}>
-              <i>W{i + 1}</i>
-              <b>
-                {w[0]} · {w[1]}
-              </b>
-              <span>{w[2]}</span>
-              <p>주간 결과물: {w[3]}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="course-section">
-        <div className="course-heading">
-          <div>
-            <small>LECTURE MANAGEMENT</small>
-            <h2>76강 학습 관리</h2>
-            <p>
-              Watch와 Mastery를 분리하고, 직접 설명·적용할 수 있는지를
-              확인합니다.
-            </p>
-          </div>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option>전체</option>
-            {sections.map((s) => (
-              <option key={s[2]}>{s[2]}</option>
-            ))}
-          </select>
-        </div>
-        <div className="lecture-list">
-          {list.map((x) => (
-            <article
-              key={x.id}
-              className={open === x.number ? "lecture open" : "lecture"}
-            >
-              <header
-                onClick={() => setOpen(open === x.number ? null : x.number)}
-              >
-                <i>{x.number}</i>
-                <div>
-                  <small>
-                    {x.section} · {x.skill}
-                  </small>
-                  <h3>{x.title}</h3>
-                </div>
-                <em>{x.status}</em>
-                {open === x.number ? <ChevronUp /> : <ChevronDown />}
-              </header>
-              {open === x.number && (
-                <div className="lecture-body">
-                  <div className="lecture-controls">
-                    <label>
-                      상태
-                      <select
-                        value={x.status}
-                        onChange={(e) =>
-                          update(x.number, {
-                            status: e.target.value,
-                            lastStudyDate: new Date()
-                              .toISOString()
-                              .slice(0, 10),
-                          })
-                        }
-                      >
-                        {["시작 전", "시청 중", "완료", "복습 필요"].map(
-                          (v) => (
-                            <option key={v}>{v}</option>
-                          ),
-                        )}
-                      </select>
-                    </label>
-                    <label>
-                      난이도
-                      <select
-                        value={x.difficulty}
-                        onChange={(e) =>
-                          update(x.number, { difficulty: e.target.value })
-                        }
-                      >
-                        {["쉬움", "보통", "어려움", "매우 어려움"].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      학습일
-                      <input
-                        type="date"
-                        value={x.studyDate}
-                        onChange={(e) =>
-                          update(x.number, { studyDate: e.target.value })
-                        }
-                      />
-                    </label>
-                    <label>
-                      학습시간(분)
-                      <input
-                        type="number"
-                        min="0"
-                        value={x.studyMinutes}
-                        onChange={(e) =>
-                          update(x.number, {
-                            studyMinutes: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      이해도 {x.understanding}%
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={x.understanding}
-                        onChange={(e) =>
-                          update(x.number, {
-                            understanding: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                  <div className="mastery-steps">
-                    {(
-                      [
-                        "watch",
-                        "understand",
-                        "practice",
-                        "explain",
-                        "apply",
-                      ] as const
-                    ).map((k) => (
-                      <label key={k}>
-                        <input
-                          type="checkbox"
-                          checked={x.steps[k]}
-                          onChange={() =>
-                            update(x.number, {
-                              steps: { ...x.steps, [k]: !x.steps[k] },
-                            })
-                          }
-                        />
-                        <i>{x.steps[k] && <Check />}</i>
-                        <span>{k.toUpperCase()}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="why-questions">
-                    {questions.map((q) => (
-                      <span key={q}>{q}</span>
-                    ))}
-                  </div>
-                  <div className="lecture-notes">
-                    {Object.entries(noteLabels).map(([k, label]) => (
-                      <label key={k}>
-                        {label}
-                        <textarea
-                          value={x.notes[k]}
-                          onChange={(e) =>
-                            update(x.number, {
-                              notes: { ...x.notes, [k]: e.target.value },
-                            })
-                          }
-                        />
-                      </label>
-                    ))}
-                  </div>
-                  <div className="practice-extension">
-                    <label>
-                      Section Practice
-                      <textarea
-                        value={x.practice}
-                        onChange={(e) =>
-                          update(x.number, { practice: e.target.value })
-                        }
-                        placeholder="직접 그린 회로·Datasheet 분석·계산·측정 결과"
-                      />
-                    </label>
-                    <label>
-                      Automotive Extension
-                      <textarea
-                        value={x.extension}
-                        onChange={(e) =>
-                          update(x.number, { extension: e.target.value })
-                        }
-                        placeholder="이 내용을 차량 ECU에 적용하면 무엇을 추가 고려해야 하는가?"
-                      />
-                    </label>
-                  </div>
-                  <div className="lecture-actions">
-                    <button
-                      onClick={() =>
-                        onQuickNote(
-                          `[HW 강의 학습]\nLecture ${x.number}: ${x.title}\n배운 내용: ${x.notes.learned}\n핵심 개념: ${x.notes.concept}\n이해하지 못한 부분: ${x.notes.unknown}\n직접 실습: ${x.practice}\n자동차 전장 적용: ${x.extension}\n면접 질문: ${x.notes.interview}`,
-                          x.studyDate || new Date().toISOString().slice(0, 10),
-                        )
-                      }
-                    >
-                      <FileText /> 빠른 기록으로 보내기
-                    </button>
-                  </div>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="course-section conversion">
-        <div className="course-heading">
-          <div>
-            <small>FROM TRAINING TO AUTOMOTIVE PROJECT</small>
-            <h2>따라 만든 보드를 독립 설계 역량으로 변환</h2>
-          </div>
-        </div>
-        <div>
-          {conversion.map((x) => (
-            <p key={x[0]}>
-              <b>{x[0]}</b>
-              <i>→</i>
-              <span>{x[1]}</span>
-            </p>
-          ))}
-        </div>
-        <aside>
-          <b>표현 원칙</b>
-          <span>
-            강의 보드는 TRAINING PROJECT로 표시합니다. 독립 설계로 주장하지
-            않고, 배운 원리를 Automotive CAN Sensor ECU에서 요구사항과 부품을
-            다시 선택해 적용합니다.
-          </span>
-        </aside>
-      </section>
-      <section className="course-section evidence">
-        <div className="course-heading">
-          <div>
-            <small>EMPLOYMENT EVIDENCE</small>
-            <h2>취업에 사용할 결과물</h2>
-          </div>
-        </div>
-        <form onSubmit={saveEvidence}>
-          <input
-            required
-            value={newEvidence.title}
-            onChange={(e) =>
-              setNewEvidence({ ...newEvidence, title: e.target.value })
-            }
-            placeholder="결과물 이름"
-          />
-          <select
-            value={newEvidence.type}
-            onChange={(e) =>
-              setNewEvidence({ ...newEvidence, type: e.target.value })
-            }
-          >
-            {[
-              "Course Completion",
-              "Circuit Calculation",
-              "Datasheet Analysis",
-              "Schematic",
-              "Simulation",
-              "PCB Layout",
-              "Measurement",
-              "Debugging",
-              "Technical Report",
-              "GitHub",
-              "Portfolio",
-            ].map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-          <input
-            value={newEvidence.description}
-            onChange={(e) =>
-              setNewEvidence({ ...newEvidence, description: e.target.value })
-            }
-            placeholder="내가 직접 한 것과 검증 결과"
-          />
-          <button>
-            <Plus />
-            추가
-          </button>
-        </form>
-        <div className="evidence-list">
-          {evidence.length ? (
-            evidence.map((x) => (
-              <article key={x.id}>
-                <Target />
-                <div>
-                  <small>
-                    {x.type} · {x.createdAt}
-                  </small>
-                  <b>{x.title}</b>
-                  <p>{x.description}</p>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p>
-              아직 Evidence가 없습니다. 매주 최소 하나의 결과물을 추가하세요.
-            </p>
-          )}
-        </div>
-      </section>
+  const saveEvidence = (event: React.FormEvent) => { event.preventDefault(); setEvidence([...evidence, { ...newEvidence, id: Date.now(), createdAt: new Date().toISOString().slice(0, 10), course: course.title }]); setNewEvidence({ title: "", type: "Block Diagram", description: "", skill: "", project: "Course", interview: false, resume: false }); };
+  const progressItems: [string, number][] = [["Course Video", video], ["Course Mastery", mastery], ["HW Skill", hwSkill], ["Automotive Skill", automotive], ["Independent Project", independent], ["Employment Preparation", employment]];
+
+  return <section className="page courses-page kickboard-course">
+    <div className="course-hero"><div><small>CURRENT COURSE · {course.category}</small><h1>전동킥보드 Embedded Project</h1><p>{course.title}</p><a href={COURSE_URL} target="_blank" rel="noreferrer">인프런 강의 열기 <ExternalLink /></a></div><div className="course-numbers"><span><b>{watched}/{lectures.length}</b>강의 시청</span><span><b>{video}%</b>Video Progress</span><span><b>{mastery}%</b>Course Mastery</span><span><b>{Math.floor(studyTime / 60)}h {studyTime % 60}m</b>실제 학습시간</span></div></div>
+    <aside className="guided-warning"><b>GUIDED PROJECT 표현 원칙</b><p>이 과정은 최종 독립 프로젝트가 아닙니다. 포트폴리오에는 반드시 “온라인 실무교육 기반 Guided Project”라고 표시하고, 제공된 설계와 직접 판단·수정한 범위를 구분합니다.</p></aside>
+    <section className="course-meta"><label>시작일<input type="date" value={course.startDate} onChange={(e) => setCourse({ ...course, startDate: e.target.value })} /></label><label>목표 완료일<input type="date" value={course.targetDate} onChange={(e) => setCourse({ ...course, targetDate: e.target.value })} /></label><label>관리 강의 수<input type="number" min="1" max="500" value={course.totalLectures} onChange={(e) => resizeLectures(Number(e.target.value))} /></label><label>이번 주 원칙<input value={course.weeklyGoal} onChange={(e) => setCourse({ ...course, weeklyGoal: e.target.value })} /></label><div><small>GUIDED PROJECT</small><b>Electric Kickboard BLDC Controller</b></div><div><small>INDEPENDENT PROJECT</small><b>Automotive CAN Sensor ECU</b></div></section>
+    <section className="course-section"><div className="course-heading"><div><small>4 PHASE ROADMAP</small><h2>강의에서 독립 설계와 취업까지</h2></div></div><div className="phase-roadmap">{phases.map((phase) => <article key={phase[0]}><i>{phase[0]}</i><b>{phase[1]}</b><small>{phase[2]}</small><p>{phase[3]}</p></article>)}</div></section>
+    <section className="course-section skill-progress-section"><div className="course-heading"><div><small>SEPARATED PROGRESS</small><h2>완강과 직무 역량을 구분</h2></div></div><div className="separated-progress">{progressItems.map(([label, value]) => <article key={label}><span><b>{label}</b><em>{value}%</em></span><i><u style={{ width: `${value}%` }} /></i></article>)}</div><div className="skill-tags">{skillAreas.map((skill) => <span key={skill}>{skill}</span>)}</div></section>
+    <section className="course-section lecture-import"><div className="course-heading"><div><small>LECTURE IMPORT</small><h2>실제 강의 목록 가져오기</h2><p>제목을 임의로 생성하지 않습니다. 직접 편집하거나 CSV/JSON을 붙여 넣으세요.</p></div></div><textarea value={importText} onChange={(e) => setImportText(e.target.value)} placeholder={'CSV: number,section,title,duration,week\n1,Section 이름,실제 강의 제목,10,1\n\n또는 JSON 배열'} /><div className="import-actions"><button type="button" onClick={importLectures}><Upload /> CSV / JSON 불러오기</button><span>{importMessage}</span></div></section>
+    <section className="course-section"><div className="course-heading lecture-heading"><div><small>LECTURE MANAGEMENT</small><h2>{lectures.length}개 강의 관리</h2><p>Section·제목은 사용자가 입력하고 Week 1~20에 직접 배정합니다.</p></div><div><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="번호·제목·기술 검색" /><select value={filter} onChange={(e) => setFilter(e.target.value)}><option>전체</option><option>미배정</option>{sections.map((s) => <option key={s}>{s}</option>)}</select></div></div>
+      <div className="lecture-list">{list.map((x) => <article key={x.id} className={open === x.number ? "lecture open" : "lecture"}><header onClick={() => setOpen(open === x.number ? null : x.number)}><i>{x.number}</i><div><small>{x.section || "SECTION 미입력"} · {x.assignedWeek ? `WEEK ${x.assignedWeek}` : "주차 미배정"}</small><h3>{x.title || "실제 강의 제목을 입력하세요"}</h3></div><em>{x.status}</em>{open === x.number ? <ChevronUp /> : <ChevronDown />}</header>{open === x.number && <div className="lecture-body">
+        <div className="lecture-identity"><label>Section<input value={x.section} onChange={(e) => update(x.number, { section: e.target.value })} /></label><label>실제 Lecture 제목<input value={x.title} onChange={(e) => update(x.number, { title: e.target.value })} /></label><label>강의 시간(분)<input type="number" min="0" value={x.duration} onChange={(e) => update(x.number, { duration: Number(e.target.value) })} /></label><label>Week 배정<select value={x.assignedWeek} onChange={(e) => update(x.number, { assignedWeek: Number(e.target.value) })}><option value="0">미배정</option>{Array.from({ length: 20 }, (_, i) => <option key={i + 1} value={i + 1}>Week {i + 1}</option>)}</select></label><label>Skill<select value={x.skill} onChange={(e) => update(x.number, { skill: e.target.value })}><option value="">선택</option>{skillAreas.map((skill) => <option key={skill}>{skill}</option>)}</select></label></div>
+        <div className="lecture-controls"><label>상태<select value={x.status} onChange={(e) => update(x.number, { status: e.target.value })}>{["시작 전", "시청 중", "완료", "복습 필요"].map((v) => <option key={v}>{v}</option>)}</select></label><label>난이도<select value={x.difficulty} onChange={(e) => update(x.number, { difficulty: e.target.value })}>{["쉬움", "보통", "어려움", "매우 어려움"].map((v) => <option key={v}>{v}</option>)}</select></label><label>학습일<input type="date" value={x.studyDate} onChange={(e) => update(x.number, { studyDate: e.target.value })} /></label><label>학습시간(분)<input type="number" min="0" value={x.studyMinutes} onChange={(e) => update(x.number, { studyMinutes: Number(e.target.value) })} /></label></div>
+        <div className="mastery-steps">{(["watch", "understand", "practice", "explain", "apply"] as const).map((key) => <label key={key}><input type="checkbox" checked={x.steps[key]} onChange={() => update(x.number, { steps: { ...x.steps, [key]: !x.steps[key] } })} /><i>{x.steps[key] && <Check />}</i><span>{key.toUpperCase()}</span></label>)}</div>
+        <div className="lecture-notes compact-notes">{Object.entries({ learned: "오늘 배운 것", practiced: "직접 해본 것", unknown: "이해하지 못한 것", problem: "문제", hypothesis: "가설", attempt: "시도", result: "결과", internship: "인턴 연결(기밀 제외)", automotive: "자동차 전장 연결", interview: "면접에서 설명할 것" }).map(([key, label]) => <label key={key}>{label}<textarea value={x.notes[key]} onChange={(e) => update(x.number, { notes: { ...x.notes, [key]: e.target.value } })} /></label>)}</div>
+        <label className="lecture-memo">Memo<textarea value={x.memo} onChange={(e) => update(x.number, { memo: e.target.value })} /></label><div className="lecture-actions"><button onClick={() => onQuickNote(`[Guided HW Project]\nLecture ${x.number}: ${x.title || "제목 미입력"}\n오늘 배운 것: ${x.notes.learned}\n직접 해본 것: ${x.notes.practiced}\n이해하지 못한 것: ${x.notes.unknown}\n문제/가설/시도/결과: ${x.notes.problem} / ${x.notes.hypothesis} / ${x.notes.attempt} / ${x.notes.result}\n인턴 연결: ${x.notes.internship}\n자동차 전장 연결: ${x.notes.automotive}\n면접에서 설명할 것: ${x.notes.interview}`, x.studyDate || new Date().toISOString().slice(0, 10))}><FileText /> 빠른 기록으로 보내기</button></div>
+      </div>}</article>)}</div>
     </section>
-  );
+    <section className="course-section conversion"><div className="course-heading"><div><small>PROJECT BOUNDARY</small><h2>교육 프로젝트와 독립 프로젝트 구분</h2></div></div><div className="project-boundaries"><article><small>PROJECT 01 · GUIDED</small><b>Electric Kickboard BLDC Motor Controller</b><p>Role: Online Course Based Training Project</p></article><article><small>PROJECT 02 · INDEPENDENT</small><b>Automotive CAN Sensor ECU</b><p>Role: Independent Hardware Design Project</p></article></div><aside><b>취업 표현 원칙</b><span>강의에서 제공된 설계와 직접 수행한 범위를 분리합니다. Guided Project의 방법을 이용해 CAN ECU의 요구사항·부품·회로·검증을 스스로 결정한 증거를 남깁니다.</span></aside></section>
+    <section className="course-section evidence"><div className="course-heading"><div><small>WEEKLY DELIVERABLE · SKILL EVIDENCE</small><h2>취업에 사용할 결과물</h2><p>실제로 수행한 결과만 저장하고 Course·Skill·Project·Interview·Resume와 연결합니다.</p></div></div><form onSubmit={saveEvidence} className="rich-evidence-form"><input required value={newEvidence.title} onChange={(e) => setNewEvidence({ ...newEvidence, title: e.target.value })} placeholder="결과물 이름" /><select value={newEvidence.type} onChange={(e) => setNewEvidence({ ...newEvidence, type: e.target.value })}>{evidenceTypes.map((v) => <option key={v}>{v}</option>)}</select><select value={newEvidence.skill} onChange={(e) => setNewEvidence({ ...newEvidence, skill: e.target.value })}><option value="">연결 Skill</option>{skillAreas.map((v) => <option key={v}>{v}</option>)}</select><select value={newEvidence.project} onChange={(e) => setNewEvidence({ ...newEvidence, project: e.target.value })}><option>Course</option><option>Guided Project</option><option>Independent Project</option></select><input value={newEvidence.description} onChange={(e) => setNewEvidence({ ...newEvidence, description: e.target.value })} placeholder="내가 직접 한 것·수치·검증 결과" /><label><input type="checkbox" checked={newEvidence.interview} onChange={(e) => setNewEvidence({ ...newEvidence, interview: e.target.checked })} /> Interview 연결</label><label><input type="checkbox" checked={newEvidence.resume} onChange={(e) => setNewEvidence({ ...newEvidence, resume: e.target.checked })} /> Resume 연결</label><button><Plus /> 추가</button></form><div className="evidence-list">{evidence.length ? evidence.map((x) => <article key={x.id}><Target /><div><small>{x.type} · {x.skill || "Skill 미연결"} · {x.project} · {x.createdAt}</small><b>{x.title}</b><p>{x.description}</p><em>{[x.interview && "Interview", x.resume && "Resume"].filter(Boolean).join(" · ")}</em></div></article>) : <p>아직 Evidence가 없습니다. 매주 최소 하나의 검증 가능한 결과물을 남기세요.</p>}</div></section>
+  </section>;
 }

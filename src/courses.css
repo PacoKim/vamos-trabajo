@@ -478,6 +478,63 @@
   margin-top: 9px;
   color: #85928b;
 }
+.guided-warning {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 17px 20px;
+  border-left: 4px solid #d6a33c;
+  background: #fff8e8;
+  color: #5d5137;
+}
+.guided-warning b { font-size: 11px; letter-spacing: .05em; }
+.guided-warning p { margin: 0; font-size: 10px; line-height: 1.7; }
+.phase-roadmap {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.phase-roadmap article {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-height: 165px;
+  padding: 17px;
+  border: 1px solid #dce3dd;
+  background: #f8faf8;
+}
+.phase-roadmap i { color: #73904c; font: 800 9px Manrope; font-style: normal; letter-spacing: .08em; }
+.phase-roadmap b { color: #253d32; font-size: 12px; }
+.phase-roadmap small { color: #7d8c84; font-size: 9px; }
+.phase-roadmap p { margin: 6px 0 0; color: #617168; font-size: 9px; line-height: 1.65; }
+.separated-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.separated-progress article { padding: 13px; border: 1px solid #dce3dd; background: white; }
+.separated-progress article > span { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; }
+.separated-progress em { color: #52733f; font-style: normal; font-weight: 800; }
+.separated-progress article > i { display: block; height: 5px; margin-top: 9px; background: #e4e9e5; }
+.separated-progress u { display: block; height: 100%; background: #83a950; text-decoration: none; }
+.skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.skill-tags span { padding: 6px 8px; background: #edf3e9; color: #536a47; font-size: 8px; }
+.lecture-import > textarea { width: 100%; min-height: 120px; border: 1px solid #d5ddd7; padding: 12px; resize: vertical; font: inherit; font-size: 10px; }
+.import-actions { display: flex; align-items: center; gap: 12px; margin-top: 9px; }
+.import-actions button { display: flex; align-items: center; gap: 6px; border: 0; background: #19382c; color: white; padding: 10px 13px; font-size: 9px; cursor: pointer; }
+.import-actions svg { width: 14px; }
+.import-actions span { color: #617168; font-size: 9px; }
+.lecture-heading > div:last-child { display: flex; gap: 7px; }
+.lecture-heading input, .lecture-heading select, .lecture-identity input, .lecture-identity select { min-width: 0; border: 1px solid #d5ddd7; background: white; padding: 9px; font: inherit; font-size: 9px; }
+.lecture-identity { display: grid; grid-template-columns: 1fr 2fr .7fr .8fr 1fr; gap: 8px; margin-bottom: 12px; }
+.lecture-identity label, .lecture-memo { display: grid; gap: 5px; color: #51675b; font-size: 8px; font-weight: 700; }
+.lecture-memo textarea { min-height: 70px; border: 1px solid #d5ddd7; padding: 9px; resize: vertical; font: inherit; }
+.project-boundaries { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+.project-boundaries article { display: grid; gap: 7px; padding: 16px; background: #f7faf7; border: 1px solid #dce3dd; }
+.project-boundaries small { color: #77905e; font-size: 8px; font-weight: 800; }
+.project-boundaries b { font-size: 11px; }
+.project-boundaries p { margin: 0; color: #68766f; font-size: 9px; }
+.rich-evidence-form { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+.rich-evidence-form > input:nth-of-type(2) { grid-column: 1 / -1; }
+.rich-evidence-form label { display: flex; align-items: center; gap: 6px; color: #51675b; font-size: 9px; }
+.evidence-list em { color: #66824f; font-size: 8px; font-style: normal; font-weight: 700; }
 @media (max-width: 950px) {
   .course-snapshot {
     grid-template-columns: 1fr 1fr;
@@ -494,6 +551,8 @@
   .lecture-notes {
     grid-template-columns: 1fr 1fr;
   }
+  .phase-roadmap { grid-template-columns: 1fr 1fr; }
+  .lecture-identity { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
   .course-snapshot {
@@ -551,4 +610,9 @@
   .courses-page {
     padding-inline: 14px;
   }
+  .guided-warning, .phase-roadmap, .separated-progress, .lecture-identity, .project-boundaries, .rich-evidence-form {
+    grid-template-columns: 1fr !important;
+  }
+  .lecture-heading > div:last-child { width: 100%; display: grid; grid-template-columns: 1fr; }
+  .rich-evidence-form > input:nth-of-type(2) { grid-column: auto; }
 }

@@ -567,14 +567,36 @@ const employmentCoursePlan = [
     "직접 만든 회로와 설계 판단을 설명해보라.",
   ],
 ] as const;
+const kickboardCoursePlan = [
+  ["전동킥보드 시스템과 회로 기초 I", "GUIDED HW PROJECT", ["Battery→Controller→Motor 전력·신호 흐름", "전압·전류·저항·전력 및 KVL·KCL", "전체 System Block Diagram 작성"], ["Kickboard System Block Diagram", "Circuit Fundamental Note"], "전동킥보드의 전력은 어떤 블록을 거쳐 모터로 전달되는가?"],
+  ["전동킥보드 시스템과 회로 기초 II", "GUIDED HW PROJECT", ["MCU·Inverter·Motor 역할 설명", "Voltage Divider·Capacitor·Inductor·Diode 복습", "블록별 입력·출력·검증 방법 기록"], ["Power/Signal Flow 설명자료"], "Controller 안에서 MCU와 Inverter의 역할은 어떻게 다른가?"],
+  ["Electronic Components I", "GUIDED HW PROJECT", ["저항·커패시터·인덕터·다이오드 역할", "Datasheet 정격과 허용오차 확인", "실제 회로에서 부품의 고장 영향 기록"], ["Component Selection Note"], "각 수동소자의 정격은 어떤 조건으로 정하는가?"],
+  ["MOSFET과 Switching", "GUIDED HW PROJECT", ["BJT·MOSFET·Switching 비교", "Vds·Vgs·Id·Rds(on)·손실 확인", "MOSFET Datasheet 후보 비교"], ["MOSFET Datasheet Analysis"], "Rds(on)이 손실과 발열에 미치는 영향은?"],
+  ["STM32 Fundamentals", "GUIDED HW PROJECT", ["CPU·Memory·GPIO·ADC·PWM·Timer", "Clock·Reset·Watchdog 구조", "STM32 Block Diagram과 주요 Pin 확인"], ["STM32 Architecture Note"], "STM32는 Motor Controller에서 어떤 역할을 하는가?"],
+  ["Embedded Firmware", "GUIDED HW PROJECT", ["C·Register·GPIO·Interrupt", "Timer·PWM·ADC 동작 이해", "LED·PWM·ADC 최소 실습"], ["STM32 Peripheral Practice"], "PWM과 ADC는 제어 시스템에서 어떻게 연결되는가?"],
+  ["Power Electronics", "GUIDED HW PROJECT", ["Switching·Buck Converter 동작", "MOSFET·Gate Driver·효율·손실", "Buck Block Diagram과 파형 설명"], ["Buck Converter Technical Note"], "Gate Driver가 필요한 이유는 무엇인가?"],
+  ["3-Phase Inverter", "GUIDED HW PROJECT", ["Half Bridge·High/Low Side", "Dead Time·3-Phase PWM", "MOSFET Switching Sequence 작성"], ["3-Phase Inverter Analysis"], "Dead Time이 없으면 어떤 문제가 생기는가?"],
+  ["BLDC Motor Control", "GUIDED HW PROJECT", ["Rotor·Stator·Hall Sensor", "Commutation·PWM·Current·Torque", "BLDC Control Flow Diagram 작성"], ["BLDC Motor Control Note"], "Hall Sensor 정보로 어떻게 Commutation하는가?"],
+  ["PCB Design과 4-Layer", "GUIDED HW PROJECT", ["Schematic·Footprint·Placement·Routing", "Power/Ground·Via·고전류 경로", "강의 프로젝트 PCB Design Review"], ["PCB Design Review Note"], "고전류 경로와 Signal Return Path를 어떻게 구분하는가?"],
+  ["Measurement와 Debugging", "GUIDED HW PROJECT", ["멀티미터·전원공급기·오실로스코프", "전압·전류·PWM·Noise 측정 계획", "무엇을 어디서 왜 측정할지 기록"], ["Hardware Measurement Checklist"], "첫 전원 인가 전에 무엇을 어떤 순서로 확인하는가?"],
+  ["Guided Project Technical Review", "GUIDED HW PROJECT", ["요구사항→부품→회로→PCB→Firmware 복기", "MCU·MOSFET·Gate Driver·Buck 선정 이유", "교육 제공 범위와 직접 수행 범위 구분"], ["Guided Project Technical Review"], "강의에서 배운 것과 독립 설계한 것은 어떻게 다른가?"],
+  ["Automotive Power", "AUTOMOTIVE HW EXTENSION", ["Vehicle 12V·과전압·저전압·과도", "역극성·Load Dump·TVS·Fuse", "12V Input Protection Block Diagram"], ["Automotive Power Protection Note"], "차량 12V 입력에는 어떤 보호가 필요한가?"],
+  ["Automotive Communication", "AUTOMOTIVE HW EXTENSION", ["CAN H/L·차동·Dominant/Recessive", "CAN Transceiver·Termination·LIN", "CANalyzer 경험과 CAN Architecture 연결"], ["Automotive CAN Architecture"], "CAN Controller와 Transceiver의 차이는?"],
+  ["EMI·EMC·ESD", "AUTOMOTIVE HW EXTENSION", ["ESD·EMI·EMC·Filtering·Decoupling", "PCB Current Path와 TVS 배치", "인턴 ESD 시험 사실·추정 구분"], ["ESD/EMC Technical Note", "ESD Internship STAR Draft"], "ESD 시험에서 확인한 사실과 추정은 무엇인가?"],
+  ["CAN Sensor ECU Requirements", "INDEPENDENT PROJECT", ["12V·Power·MCU·CAN·Sensor 요구사항", "독립 System Block Diagram", "기능별 검증 기준 정의"], ["Requirements Document", "System Block Diagram"], "Guided Project와 달리 직접 결정한 요구사항은 무엇인가?"],
+  ["CAN Sensor ECU Component Selection", "INDEPENDENT PROJECT", ["MCU·Regulator·CAN·TVS·Sensor 선정", "정격·온도·원가·수급·대안 비교", "Datasheet 근거 페이지 기록"], ["Component Selection Table"], "왜 이 부품을 선택했고 대안은 무엇인가?"],
+  ["CAN Sensor ECU Schematic", "INDEPENDENT PROJECT", ["Power·Protection·MCU·CAN·Sensor", "Debug Connector·Test Point", "ERC와 Block별 Design Review"], ["ECU Schematic V1"], "전체 회로를 Block 단위로 설명해보라."],
+  ["PCB·Prototype", "INDEPENDENT PROJECT", ["Placement·Power/Ground·CAN Routing", "Protection·Decoupling·Test Point 배치", "DRC·Gerber·BOM 및 가능하면 주문"], ["PCB V1", "Gerber", "BOM"], "PCB 배치와 배선 순서를 어떤 근거로 정했는가?"],
+  ["Measurement·Debugging·Portfolio", "EMPLOYMENT PREPARATION", ["전원 인가·Rail·MCU·CAN·Sensor 검증", "문제→가설→측정→수정→재시험", "Guided/Independent 구분 Portfolio 작성"], ["Automotive CAN Sensor ECU Portfolio V1"], "직접 결정한 설계와 측정 근거를 설명해보라."],
+] as const;
 const weeks: Week[] = raw.map((w, i) => ({
   n: i + 1,
   dates: w[0],
-  title: employmentCoursePlan[i][0],
-  phase: employmentCoursePlan[i][1],
-  tasks: [...employmentCoursePlan[i][2]],
-  deliverables: [...employmentCoursePlan[i][3]],
-  question: employmentCoursePlan[i][4],
+  title: kickboardCoursePlan[i][0],
+  phase: kickboardCoursePlan[i][1],
+  tasks: [...kickboardCoursePlan[i][2]],
+  deliverables: [...kickboardCoursePlan[i][3]],
+  question: kickboardCoursePlan[i][4],
 }));
 const nav: [[View, string, any], ...any[]] = [
   ["dashboard", "대시보드", BarChart3],
@@ -631,13 +653,13 @@ export default function App() {
     }),
     [menu, setMenu] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>(() =>
-    JSON.parse(localStorage.getItem("ahw-done") || "{}"),
+    JSON.parse(localStorage.getItem("ahw-kickboard-curriculum-done-v1") || "{}"),
   );
   const [journal, setJournal] = useState(
     () => localStorage.getItem("ahw-journal") || "",
   );
   useEffect(
-    () => localStorage.setItem("ahw-done", JSON.stringify(done)),
+    () => localStorage.setItem("ahw-kickboard-curriculum-done-v1", JSON.stringify(done)),
     [done],
   );
   useEffect(() => localStorage.setItem("ahw-journal", journal), [journal]);
@@ -724,7 +746,7 @@ export default function App() {
               [
                 "courses",
                 "회로 강의 관리",
-                "인프런 76강·실습·Evidence·자동차 전장 적용 관리",
+                "전동킥보드 159강·실습·Evidence·자동차 전장 확장 관리",
                 BookOpen,
               ],
               [
@@ -1139,46 +1161,70 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
 function CourseSnapshot({ go }: { go: (v: View) => void }) {
   const lectures = (() => {
     try {
-      return JSON.parse(localStorage.getItem("ahw-course-lectures") || "[]");
+      return JSON.parse(localStorage.getItem("ahw-kickboard-lectures-v1") || "[]");
     } catch {
       return [];
     }
   })();
-  const completed = lectures.filter((x: any) => x.status === "완료").length;
-  const current = lectures.find((x: any) => x.status !== "완료") || {
+  const completed = lectures.filter((x: any) => x.steps?.watch || x.status === "완료").length;
+  const current = lectures.find((x: any) => !x.steps?.watch && x.status !== "완료") || {
     number: 1,
-    title: "Orientation · HW 경험이 필요한 이유",
-    section: "Orientation",
+    title: "실제 강의 제목을 입력하세요",
+    section: "Section 미입력",
     steps: {},
   };
-  const video = Math.round((completed / 76) * 100);
+  const total = lectures.length || 159;
+  const video = Math.round((completed / total) * 100);
   const mastery = lectures.length
     ? Math.round(
         (lectures.reduce(
           (sum: number, x: any) =>
-            sum + Object.values(x.steps || {}).filter(Boolean).length,
+            sum + ["understand", "practice", "explain", "apply"].filter((key) => x.steps?.[key]).length,
           0,
         ) /
-          (76 * 5)) *
+          (total * 4)) *
           100,
       )
     : 0;
+  const hwSkill = lectures.length
+    ? Math.round((lectures.filter((x: any) => x.steps?.practice || x.steps?.explain).length / total) * 100)
+    : 0;
+  const automotiveSkill = lectures.length
+    ? Math.round((lectures.filter((x: any) => x.steps?.apply || x.notes?.automotive?.trim()).length / total) * 100)
+    : 0;
+  const independentEvidence = (() => {
+    try {
+      const items = JSON.parse(localStorage.getItem("ahw-kickboard-evidence-v1") || "[]");
+      return Math.min(100, items.filter((x: any) => x.project === "Independent Project").length * 10);
+    } catch {
+      return 0;
+    }
+  })();
   return (
     <section className="course-snapshot">
       <div>
-        <small>CURRENT LEARNING · TRAINING PROJECT</small>
-        <h2>PCB HW설계 실무</h2>
-        <p>STM32 Mixed-Signal Board · 인프런 76강</p>
+        <small>CURRENT PHASE · GUIDED HW PROJECT</small>
+        <h2>전동킥보드 Embedded Project</h2>
+        <p>BLDC Motor Controller · 인프런 · {total}강 관리</p>
       </div>
       <div className="course-snapshot-stats">
         <span>
-          <b>{completed}/76</b>Lectures
+          <b>{completed}/{total}</b>Lectures
         </span>
         <span>
           <b>{video}%</b>Video
         </span>
         <span>
           <b>{mastery}%</b>Mastery
+        </span>
+        <span>
+          <b>{hwSkill}%</b>HW Skill
+        </span>
+        <span>
+          <b>{automotiveSkill}%</b>Automotive
+        </span>
+        <span>
+          <b>{independentEvidence}%</b>Independent
         </span>
       </div>
       <div className="today-hw-study">
@@ -1187,7 +1233,7 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
           Lecture {current.number} · {current.title}
         </b>
         <span>{current.section}</span>
-        <p>오늘의 질문: 왜 이 회로와 부품이 필요한지 설명할 수 있는가?</p>
+        <p>오늘의 질문: 강의에서 제공된 것과 내가 직접 수행한 것은 무엇인가?</p>
       </div>
       <button onClick={() => go("courses")}>강의 학습 열기 →</button>
     </section>
@@ -1229,7 +1275,7 @@ function Dashboard({
         </div>
         <aside className="target">
           <small>TARGET COMPANIES</small>
-          {["01  현대자동차", "02  기아", "03  현대모비스"].map((x) => (
+          {["01  현대자동차", "02  현대모비스", "03  기아"].map((x) => (
             <b key={x}>{x}</b>
           ))}
           <hr />
@@ -1260,7 +1306,7 @@ function Dashboard({
           </div>
         </article>
         <article>
-          <small>HARDWARE PROJECT</small>
+          <small>INDEPENDENT PROJECT</small>
           <strong>{progress}%</strong>
           <span>CAN Sensor ECU</span>
         </article>
@@ -1273,11 +1319,11 @@ function Dashboard({
       <section className="restart-banner">
         <div>
           <small>CURRICULUM RESTART</small>
-          <b>2026년 8월 24일 월요일부터 WEEK 1 재시작</b>
+          <b>전동킥보드 Guided Project 중심 20주 과정</b>
         </div>
         <p>
-          이번 주 미완료분은 누적하지 않습니다. 주말에는 환경 점검과 다음 주
-          핵심 목표 3개만 준비하고, 20주 과정은 2027년 1월 10일까지 진행합니다.
+          미완료분은 자동 누적하지 않습니다. 매주 핵심 목표는 최대 3개로 제한하고,
+          강의 개수보다 이해·실습·검증 가능한 결과물을 우선합니다.
         </p>
       </section>
       <CourseSnapshot go={go} />
@@ -1322,7 +1368,7 @@ function Dashboard({
             [
               "4",
               "기업·공고 분석",
-              "현대자동차·기아·현대모비스의 직무 차이를 설명할 수 있는가?",
+              "현대자동차·현대모비스·기아의 직무 차이를 설명할 수 있는가?",
               "applications",
             ],
             [
@@ -1527,8 +1573,8 @@ function Applications() {
   ];
   const sortedProfiles = [...profiles].sort(
     (a, b) =>
-      ["현대자동차", "기아", "현대모비스"].indexOf(a.company) -
-      ["현대자동차", "기아", "현대모비스"].indexOf(b.company),
+      ["현대자동차", "현대모비스", "기아"].indexOf(a.company) -
+      ["현대자동차", "현대모비스", "기아"].indexOf(b.company),
   );
   const [apps, setApps] = useState<any[]>(() =>
     JSON.parse(localStorage.getItem("ahw-apps") || "[]"),
@@ -2458,12 +2504,12 @@ function Review({ completed, total }: { completed: number; total: number }) {
     () => localStorage.getItem("ahw-review") || "",
   );
   const [courseReview, setCourseReview] = useState<Record<string, string>>(() =>
-    JSON.parse(localStorage.getItem("ahw-course-review") || "{}"),
+    JSON.parse(localStorage.getItem("ahw-kickboard-review-v1") || "{}"),
   );
   useEffect(() => localStorage.setItem("ahw-review", text), [text]);
   useEffect(
     () =>
-      localStorage.setItem("ahw-course-review", JSON.stringify(courseReview)),
+      localStorage.setItem("ahw-kickboard-review-v1", JSON.stringify(courseReview)),
     [courseReview],
   );
   return (
@@ -2509,20 +2555,21 @@ function Review({ completed, total }: { completed: number; total: number }) {
         <small>자동 저장됨</small>
       </article>
       <article className="panel course-review">
-        <small>COURSE WEEKLY REVIEW</small>
-        <h2>강의가 실제 역량으로 바뀌었는지 확인</h2>
+        <small>GUIDED PROJECT WEEKLY REVIEW</small>
+        <h2>전동킥보드 강의가 실제 HW 역량으로 바뀌었는지 확인</h2>
         <div>
           {[
-            ["lectures", "완료한 강의 수"],
-            ["time", "강의 관련 학습시간"],
-            ["practice", "완료한 Practice"],
-            ["deliverable", "Weekly Deliverable"],
-            ["learned", "배운 것"],
-            ["unknown", "이해하지 못한 것"],
-            ["explain", "내가 설명할 수 있는가?"],
-            ["automotive", "자동차 전장 연결"],
-            ["internship", "인턴 경험 연결(기밀 제외)"],
-            ["next", "다음 주 Course 목표"],
+            ["lectures", "이번 주에 실제로 본 Lecture"],
+            ["time", "강의·실습 실제 학습시간"],
+            ["practice", "직접 수행한 회로·Firmware·측정"],
+            ["deliverable", "Evidence Bank에 남긴 결과물"],
+            ["learned", "배운 것과 직접 해본 것의 차이"],
+            ["unknown", "이해하지 못한 것·Missing Evidence"],
+            ["explain", "부품·회로 선정 이유를 설명할 수 있는가?"],
+            ["automotive", "자동차 전장으로 확장할 내용"],
+            ["internship", "한국알프스 경험 연결(기밀 제외)"],
+            ["carryDecision", "미완료 처리: Carry Over / Reduce Scope / Reschedule / Skip / Completed Elsewhere"],
+            ["next", "다음 주 핵심 목표 최대 3개"],
           ].map(([key, label]) => (
             <label key={key}>
               {label}
@@ -2680,7 +2727,7 @@ function CareerStrategy() {
   return (
     <Page
       title="취업 준비 전략"
-      sub="현대자동차·기아·현대모비스 자동차 전장 HW/회로설계 지원을 위해 무엇을 준비하고 어떤 증거를 남길지 정리했습니다."
+      sub="현대자동차·현대모비스·기아 자동차 전장 HW/회로설계 지원을 위해 무엇을 준비하고 어떤 증거를 남길지 정리했습니다."
     >
       <div className="priority-banner">
         <b>준비 우선순위</b>
