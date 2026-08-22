@@ -473,6 +473,7 @@
 .dash {
   padding-top: 0;
 }
+.dash.priorities-only { grid-template-columns: 1fr; }
 .security {
   background: #fff3dc;
   border: 1px solid #ecd49f;

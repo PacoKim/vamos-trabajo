@@ -972,23 +972,57 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
           ],
         }
       : schedules[now.getDay()];
-  const technicalFocus = [
-    "주간 회고·다음 주 핵심 목표 3개",
-    "회로 기초 복습 또는 계산 20분",
-    "전동킥보드 강의·노트 30분",
-    "자동차 전장 확장 학습 20분",
-    "CAN Sensor ECU 결정사항 1개 기록",
-    "Evidence·면접 답변 1개 정리",
-    "HW 실습·측정 또는 주말 보충",
-  ][now.getDay()];
-  const minimumTasks = isNaN(now.getDay()) ? [] : [
-    { text: "통근 영어 20분 또는 Speaking 1세트", track: "영어", minimum: true },
-    { text: "인적성 10문제 또는 오답 10분", track: "인적성", minimum: true },
-    { text: technicalFocus, track: "HW·취업", minimum: true },
-    { text: "오늘 배운 것·직접 한 것 5분 기록", track: "Evidence", minimum: true },
-  ];
+  const dailyTasksByDay = [
+    [
+      ["주간 회고", "완료·미완료 원인 15분 정리"],
+      ["다음 주", "다음 주 핵심 목표를 3개만 선택"],
+      ["보충", "남은 주말 보충 항목 중 가장 중요한 1개"],
+      ["준비", "강의·실습 자료와 월요일 할 일 준비"],
+    ],
+    [
+      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
+      ["회로", "이번 주 회로 개념·계산 20분"],
+      ["강의", "전동킥보드 Lecture 1개 또는 30분"],
+      ["기록", "배운 것과 모르는 것 5분 기록"],
+    ],
+    [
+      ["인적성", "인적성 10문제 또는 오답 10분"],
+      ["강의", "전동킥보드 Lecture 1개와 핵심 노트"],
+      ["실습", "강의 관련 계산·회로·Firmware 30분"],
+      ["기록", "직접 해본 것과 결과 5분 기록"],
+    ],
+    [
+      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
+      ["자동차", "CAN·차량 전원·보호·EMC 중 1개 20분"],
+      ["강의", "강의 내용과 자동차 적용 차이 1개 정리"],
+      ["기록", "이해하지 못한 점과 확인할 것 기록"],
+    ],
+    [
+      ["인적성", "인적성 10문제 또는 오답 10분"],
+      ["프로젝트", "CAN Sensor ECU 설계 결정 1개"],
+      ["검증", "선정 근거 또는 검증 방법 1개 기록"],
+      ["기록", "문제·가설·다음 행동 5분 기록"],
+    ],
+    [
+      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
+      ["취업", "Evidence 또는 면접 답변 1개 정리"],
+      ["점검", "이번 주 빠진 학습·프로젝트 항목 확인"],
+      ["기록", "이번 주 자소서에 쓸 수 있는 사실 1개"],
+    ],
+    [
+      ["실습", "회로·Firmware·측정 실습 2~3시간"],
+      ["보충", "평일 미완료 중 중요한 항목부터 수행"],
+      ["영어·인적성", "영어 30분 또는 인적성 20문제"],
+      ["Evidence", "사진·수치·결과를 Evidence로 정리"],
+    ],
+  ] as const;
+  const minimumTasks = dailyTasksByDay[now.getDay()].map(([track, text]) => ({
+    text,
+    track,
+    minimum: true,
+  }));
   const defaultTasks = minimumTasks.map((task, i) => ({
-    id: `parallel-${dateKey}-${i}`,
+    id: `daily-v2-${dateKey}-${i}`,
     ...task,
     done: false,
   }));
@@ -996,7 +1030,9 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
     );
-    const existing = saved[dateKey] || [];
+    const existing = (saved[dateKey] || []).filter(
+      (task: any) => !String(task.id || "").startsWith(`parallel-${dateKey}-`),
+    );
     const additions = defaultTasks.filter((task) => !existing.some((x: any) => x.id === task.id));
     return { ...saved, [dateKey]: [...existing, ...additions] };
   });
@@ -1249,15 +1285,6 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
     </section>
   );
 }
-function ParallelOverview({ current, done, go }: { current: Week; done: Record<string, boolean>; go: (v: View) => void }) {
-  const tracks = parallelTracks(current);
-  const completed = tracks.filter((_, i) => done[`p${current.n}-${i}`]).length;
-  return <section className="parallel-overview">
-    <div className="parallel-overview-head"><div><small>WEEKLY PARALLEL PLAN</small><h2>이번 주 6개 병렬 트랙</h2><p>주간 핵심 3개와 별개로 각 영역의 흐름이 끊기지 않을 최소량입니다.</p></div><strong>{completed}/{tracks.length}</strong></div>
-    <div>{tracks.map(([name, task], i) => <article key={name} className={done[`p${current.n}-${i}`] ? "done" : ""}><i>{i + 1}</i><span><b>{name}</b><small>{task}</small></span>{done[`p${current.n}-${i}`] ? <Check /> : <Circle />}</article>)}</div>
-    <button onClick={() => go("study")}>병렬 주간 계획 열기 →</button>
-  </section>;
-}
 function Dashboard({
   current,
   done,
@@ -1346,23 +1373,8 @@ function Dashboard({
         </p>
       </section>
       <CourseSnapshot go={go} />
-      <ParallelOverview current={current} done={done} go={go} />
       <DailyAgenda go={go} />
-      <section className="dash">
-        <article className="panel">
-          <small>THIS WEEK · W{current.n}</small>
-          <h2>{current.title}</h2>
-          {current.tasks.slice(0, 3).map((t, i) => (
-            <div className="goal" key={t}>
-              <i>{i + 1}</i>
-              <span>{t}</span>
-              {done[`w${current.n}-${i}`] ? <Check /> : <Circle />}
-            </div>
-          ))}
-          <button className="link" onClick={() => go("study")}>
-            주간 학습 열기 →
-          </button>
-        </article>
+      <section className="dash priorities-only">
         <article className="panel job-priorities">
           <small>JOB PREPARATION PRIORITY</small>
           <h2>지금 취업을 위해 먼저 확인할 것</h2>
