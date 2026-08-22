@@ -6,6 +6,12 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
+.navigation-hub.compact-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.navigation-hub.compact-three button { grid-template-columns: 38px 1fr; min-height: 105px; padding: 17px; }
+.navigation-hub.compact-three button > i { display: none; }
+.study-utilities { display: flex; align-items: center; gap: 7px; margin: -5px 0 14px; padding: 9px 12px; border: 1px solid #dce3dd; background: white; }
+.study-utilities span { margin-right: auto; color: #7a8981; font-size: 8px; }
+.study-utilities button { border: 0; background: #edf3e9; color: #49633d; padding: 7px 10px; font-size: 8px; font-weight: 700; cursor: pointer; }
 .navigation-hub button {
   display: grid;
   grid-template-columns: 42px 1fr max-content;
@@ -1081,6 +1087,7 @@
   .navigation-hub {
     grid-template-columns: 1fr;
   }
+  .navigation-hub.compact-three { grid-template-columns: 1fr; }
   .navigation-hub button {
     grid-template-columns: 36px 1fr;
     min-height: 100px;

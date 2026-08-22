@@ -753,50 +753,26 @@ export default function App() {
         {view === "learningHub" && (
           <NavigationHub
             title="학습·프로젝트"
-            sub="일정, 회로 입문, ECU 프로젝트와 역량 증거를 단계별로 관리합니다."
+            sub="강의 학습 → 주간 실행 → 독립 프로젝트, 세 가지만 따라가면 됩니다."
             go={go}
             items={[
               [
                 "courses",
-                "회로 강의 관리",
-                "전동킥보드 159강·실습·Evidence·자동차 전장 확장 관리",
-                BookOpen,
-              ],
-              [
-                "planner",
-                "주간 일정",
-                "출퇴근·헬스 일정을 반영한 일주일 학습 계획",
+                "전동킥보드 강의",
+                "강의·노트·실습·취업 Evidence를 한곳에서 관리",
                 BookOpen,
               ],
               [
                 "study",
-                "20주 학습",
-                "회로 기초부터 PCB·측정까지 이어지는 커리큘럼",
+                "20주 병렬 계획",
+                "이번 주 핵심 3개와 6개 취업 트랙 체크",
                 GraduationCap,
               ],
               [
-                "circuitStarter",
-                "회로 프로젝트 입문",
-                "장비 구매·기초 실습·CAN·12V 전원 안내",
-                Wrench,
-              ],
-              [
                 "project",
-                "CAN Sensor ECU",
-                "요구사항부터 PCB와 디버깅까지 프로젝트 관리",
+                "독립 CAN ECU 프로젝트",
+                "요구사항·부품·회로·PCB·측정 결과만 집중 관리",
                 FolderKanban,
-              ],
-              [
-                "skills",
-                "역량 관리",
-                "지식·시뮬레이션·구현·측정·설명 증거",
-                BarChart3,
-              ],
-              [
-                "review",
-                "주간 회고",
-                "완료율과 미완료 작업을 다음 주 계획으로 연결",
-                RotateCcw,
               ],
             ]}
           />
@@ -831,6 +807,7 @@ export default function App() {
             setWeek={setWeek}
             done={done}
             setDone={setDone}
+            go={go}
           />
         )}{" "}
         {view === "project" && <Project go={go} />}{" "}
@@ -897,7 +874,7 @@ function NavigationHub({
 }) {
   return (
     <Page title={title} sub={sub}>
-      <div className="navigation-hub">
+      <div className={`navigation-hub ${items.length === 3 ? "compact-three" : ""}`}>
         {items.map(([id, name, description, Icon]) => (
           <button key={id} onClick={() => go(id)}>
             <Icon />
@@ -1441,12 +1418,14 @@ function Study({
   setWeek,
   done,
   setDone,
+  go,
 }: {
   current: Week;
   week: number;
   setWeek: (n: number) => void;
   done: Record<string, boolean>;
   setDone: (v: Record<string, boolean>) => void;
+  go: (v: View) => void;
 }) {
   const tracks = parallelTracks(current);
   const mainCompleted = current.tasks.filter((_, i) => done[`w${week}-${i}`]).length;
@@ -1463,6 +1442,11 @@ function Study({
         <span>6개 취업 트랙을 매주 최소 단위로 병행</span>
         <span>평일 최대 2시간·주간 핵심 목표 최대 3개</span>
       </article>
+      <div className="study-utilities">
+        <span>필요할 때만 열기</span>
+        <button onClick={() => go("planner")}>주간 시간표</button>
+        <button onClick={() => go("review")}>주간 회고</button>
+      </div>
       <div className="study">
         <div className="timeline">
           {weeks.map((w) => (
