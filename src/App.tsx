@@ -712,8 +712,17 @@ export default function App() {
     [done],
   );
   useEffect(() => localStorage.setItem("ahw-journal", journal), [journal]);
+  const recommendedWeek =
+    weeks.find((item) =>
+      item.tasks.some((_, index) => !done[`w${item.n}-${index}`]),
+    )?.n || 20;
+  useEffect(() => setWeek(recommendedWeek), [recommendedWeek]);
   const current = weeks[week - 1],
-    completed = Object.values(done).filter(Boolean).length,
+    completed = weeks.reduce(
+      (sum, item) =>
+        sum + item.tasks.filter((_, index) => done[`w${item.n}-${index}`]).length,
+      0,
+    ),
     total = weeks.reduce((a, w) => a + w.tasks.length, 0),
     progress = Math.round((completed / total) * 100);
   const go = (v: View) => {
@@ -767,6 +776,7 @@ export default function App() {
           <Dashboard
             current={current}
             done={done}
+            setDone={setDone}
             progress={progress}
             go={go}
           />
@@ -925,7 +935,17 @@ function NavigationHub({
     </Page>
   );
 }
-function DailyAgenda({ go }: { go: (v: View) => void }) {
+function DailyAgenda({
+  go,
+  current,
+  done,
+  setDone,
+}: {
+  go: (v: View) => void;
+  current: Week;
+  done: Record<string, boolean>;
+  setDone: (value: Record<string, boolean>) => void;
+}) {
   const schedules = optimizedDailySchedule;
   const now = new Date();
   const offset = now.getTimezoneOffset();
@@ -933,60 +953,43 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     .toISOString()
     .slice(0, 10);
   const schedule = schedules[now.getDay()];
-  const dailyTasksByDay = [
-    [
-      ["주간 회고", "완료·미완료 원인 15분 정리"],
-      ["다음 주", "다음 주 핵심 목표를 3개만 선택"],
-      ["보충", "남은 주말 보충 항목 중 가장 중요한 1개"],
-      ["준비", "강의·실습 자료와 월요일 할 일 준비"],
-    ],
-    [
-      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
-      ["회로", "이번 주 회로 개념·계산 20분"],
-      ["강의", "전동킥보드 Lecture 1개 또는 30분"],
-      ["기록", "배운 것과 모르는 것 5분 기록"],
-    ],
-    [
-      ["인적성", "인적성 10문제 또는 오답 10분"],
-      ["강의", "전동킥보드 Lecture 1개와 핵심 노트"],
-      ["실습", "강의 관련 계산·회로·Firmware 30분"],
-      ["기록", "직접 해본 것과 결과 5분 기록"],
-    ],
-    [
-      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
-      ["자동차", "CAN·차량 전원·보호·EMC 중 1개 20분"],
-      ["강의", "강의 내용과 자동차 적용 차이 1개 정리"],
-      ["기록", "이해하지 못한 점과 확인할 것 기록"],
-    ],
-    [
-      ["인적성", "인적성 10문제 또는 오답 10분"],
-      ["프로젝트", "CAN Sensor ECU 설계 결정 1개"],
-      ["검증", "선정 근거 또는 검증 방법 1개 기록"],
-      ["기록", "문제·가설·다음 행동 5분 기록"],
-    ],
-    [
-      ["영어", "통근 영어 20분 또는 Speaking 1세트"],
-      ["취업", "Evidence 또는 면접 답변 1개 정리"],
-      ["점검", "이번 주 빠진 학습·프로젝트 항목 확인"],
-      ["기록", "이번 주 자소서에 쓸 수 있는 사실 1개"],
-    ],
-    [
-      ["실습", "회로·Firmware·측정 실습 2~3시간"],
-      ["보충", "평일 미완료 중 중요한 항목부터 수행"],
-      ["영어·인적성", "영어 30분 또는 인적성 20문제"],
-      ["Evidence", "사진·수치·결과를 Evidence로 정리"],
-    ],
-  ] as const;
-  const minimumTasks = dailyTasksByDay[now.getDay()].map(([track, text]) => ({
-    text,
-    track,
-    minimum: true,
-  }));
+  const mainSuggestions = current.tasks
+    .map((text, index) => ({
+      text,
+      track: `${current.n}주차 핵심`,
+      curriculumId: `w${current.n}-${index}`,
+      minimum: true,
+    }))
+    .filter((task) => !done[task.curriculumId])
+    .slice(0, 2);
+  const trackSuggestions = parallelTracks(current)
+    .map(([track, text], index) => ({
+      text,
+      track,
+      curriculumId: `p${current.n}-${index}`,
+      minimum: true,
+    }))
+    .filter((task) => !done[task.curriculumId])
+    .slice(0, 1);
+  const maintenanceByDay = [
+    ["회고", "완료 결과를 정리하고 다음 행동 1개 기록"],
+    ["영어", "통근 영어 20분 또는 말하기 1세트"],
+    ["인적성", "인적성 10문제 또는 오답 10분"],
+    ["영어", "통근 영어 20분 또는 말하기 1세트"],
+    ["인적성", "인적성 10문제 또는 오답 10분"],
+    ["취업 기록", "이번 주 결과물이나 면접 답변 1개 정리"],
+    ["결과물", "사진·수치·측정 결과를 취업 증거로 정리"],
+  ][now.getDay()];
+  const minimumTasks = [
+    ...mainSuggestions,
+    ...trackSuggestions,
+    { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true },
+  ].slice(0, 4);
   const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
-    ? minimumTasks.map((task, i) => ({
-        id: `daily-auto-${dateKey}-${i}`,
+      ? minimumTasks.map((task, i) => ({
+        id: `daily-auto-${dateKey}-${"curriculumId" in task ? task.curriculumId : `maintenance-${i}`}`,
         ...task,
         done: false,
       }))
@@ -1024,6 +1027,13 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     ]);
     setNewTask("");
   };
+  const toggleDailyTask = (task: any) => {
+    const next = !task.done;
+    setTasks(tasks.map((item) => item.id === task.id ? { ...item, done: next } : item));
+    if (task.curriculumId) {
+      setDone({ ...done, [task.curriculumId]: next });
+    }
+  };
   const completed = tasks.filter((task) => task.done).length;
   const monday = new Date(now);
   monday.setHours(12, 0, 0, 0);
@@ -1044,6 +1054,10 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
           .map((task) => ({ ...task, sourceDate: key })),
   );
   const finishCatchUpTask = (sourceDate: string, id: string) => {
+    const sourceTask = (allTasks[sourceDate] || []).find((task) => task.id === id);
+    if (sourceTask?.curriculumId) {
+      setDone({ ...done, [sourceTask.curriculumId]: true });
+    }
     setAllTasks((all) => ({
       ...all,
       [sourceDate]: (all[sourceDate] || []).map((task) =>
@@ -1074,7 +1088,7 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
       <article className="daily-checklist">
         <div className="daily-heading">
           <div>
-            <small>일일 체크리스트</small>
+            <small>일일 체크리스트 · 자동 최적화</small>
             <h2>오늘 할 일</h2>
           </div>
           <strong>
@@ -1095,13 +1109,7 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
                 <input
                   type="checkbox"
                   checked={task.done}
-                  onChange={() =>
-                    setTasks(
-                      tasks.map((x) =>
-                        x.id === task.id ? { ...x, done: !x.done } : x,
-                      ),
-                    )
-                  }
+                  onChange={() => toggleDailyTask(task)}
                 />
                 <i>{task.done && <Check />}</i>
                 <span>
@@ -1262,11 +1270,13 @@ function CourseSnapshot({ go }: { go: (v: View) => void }) {
 function Dashboard({
   current,
   done,
+  setDone,
   progress,
   go,
 }: {
   current: Week;
   done: Record<string, boolean>;
+  setDone: (value: Record<string, boolean>) => void;
   progress: number;
   go: (v: View) => void;
 }) {
@@ -1347,7 +1357,12 @@ function Dashboard({
         </p>
       </section>
       <CourseSnapshot go={go} />
-      <DailyAgenda go={go} />
+      <DailyAgenda
+        go={go}
+        current={current}
+        done={done}
+        setDone={setDone}
+      />
       <section className="dash priorities-only">
         <article className="panel job-priorities">
           <small>취업 준비 우선순위</small>
@@ -1424,7 +1439,7 @@ function Study({
     >
       <article className="study-restart">
         <b>새 시작 원칙</b>
-        <span>지난주 미완료 작업을 그대로 쌓지 않기</span>
+        <span>체크한 결과에 따라 가장 먼저 남은 주차로 자동 이동</span>
         <span>6개 취업 트랙을 매주 최소 단위로 병행</span>
         <span>평일 최대 2시간·주간 핵심 목표 최대 3개</span>
       </article>
@@ -2537,7 +2552,7 @@ function Review({ completed, total }: { completed: number; total: number }) {
   );
   return (
     <Page
-      title="Weekly Review"
+      title="주간 회고"
       sub="일요일 30분, 밀린 일을 자동으로 쌓지 말고 다음 주를 다시 설계합니다."
     >
       <div className="review-grid">
@@ -2552,14 +2567,14 @@ function Review({ completed, total }: { completed: number; total: number }) {
           </p>
         </article>
         <article className="panel">
-          <h2>미완료 Task 처리</h2>
+          <h2>미완료 항목 처리</h2>
           <div className="review-options">
             {[
-              "Carry Over",
-              "Skip",
-              "Reduce Scope",
-              "Reschedule",
-              "Completed Elsewhere",
+              "다음 주로 이동",
+              "생략",
+              "범위 축소",
+              "날짜 재조정",
+              "다른 활동에서 완료",
             ].map((x) => (
               <span key={x}>{x}</span>
             ))}
@@ -2582,16 +2597,16 @@ function Review({ completed, total }: { completed: number; total: number }) {
         <h2>전동킥보드 강의가 실제 HW 역량으로 바뀌었는지 확인</h2>
         <div>
           {[
-            ["lectures", "이번 주에 실제로 본 Lecture"],
+            ["lectures", "이번 주에 실제로 본 강의"],
             ["time", "강의·실습 실제 학습시간"],
-            ["practice", "직접 수행한 회로·Firmware·측정"],
-            ["deliverable", "Evidence Bank에 남긴 결과물"],
+            ["practice", "직접 수행한 회로·펌웨어·측정"],
+            ["deliverable", "결과물 보관함에 남긴 증거"],
             ["learned", "배운 것과 직접 해본 것의 차이"],
-            ["unknown", "이해하지 못한 것·Missing Evidence"],
+            ["unknown", "이해하지 못한 것·부족한 증거"],
             ["explain", "부품·회로 선정 이유를 설명할 수 있는가?"],
             ["automotive", "자동차 전장으로 확장할 내용"],
             ["internship", "한국알프스 경험 연결(기밀 제외)"],
-            ["carryDecision", "미완료 처리: Carry Over / Reduce Scope / Reschedule / Skip / Completed Elsewhere"],
+            ["carryDecision", "미완료 처리: 다음 주 이동 / 범위 축소 / 날짜 재조정 / 생략 / 다른 활동에서 완료"],
             ["next", "다음 주 핵심 목표 최대 3개"],
           ].map(([key, label]) => (
             <label key={key}>
