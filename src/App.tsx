@@ -990,6 +990,32 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     setNewTask("");
   };
   const completed = tasks.filter((task) => task.done).length;
+  const monday = new Date(now);
+  monday.setHours(12, 0, 0, 0);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const weekdayKeys = Array.from({ length: 5 }, (_, i) => {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    return new Date(day.getTime() - day.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
+  });
+  const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+  const catchUpTasks = weekdayKeys.flatMap((key) =>
+    key === dateKey && !isWeekend
+      ? []
+      : (allTasks[key] || [])
+          .filter((task) => !task.done)
+          .map((task) => ({ ...task, sourceDate: key })),
+  );
+  const finishCatchUpTask = (sourceDate: string, id: string) => {
+    setAllTasks((all) => ({
+      ...all,
+      [sourceDate]: (all[sourceDate] || []).map((task) =>
+        task.id === id ? { ...task, done: true, caughtUp: dateKey } : task,
+      ),
+    }));
+  };
   return (
     <section className="daily-overview">
       <article className="today-schedule">
@@ -1070,6 +1096,42 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
             <Plus /> 추가
           </button>
         </form>
+        <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
+          <div className="catchup-heading">
+            <div>
+              <small>{isWeekend ? "WEEKEND CATCH-UP" : "WEEKEND QUEUE"}</small>
+              <h3>{isWeekend ? "이번 주 미완료 보충" : "주말 보충 예정"}</h3>
+            </div>
+            <strong>{catchUpTasks.length}개</strong>
+          </div>
+          {catchUpTasks.length ? (
+            <div className="catchup-tasks">
+              {catchUpTasks.map((task) => (
+                <label key={`${task.sourceDate}-${task.id}`}>
+                  <input
+                    type="checkbox"
+                    checked={false}
+                    onChange={() => finishCatchUpTask(task.sourceDate, task.id)}
+                  />
+                  <i><Check /></i>
+                  <span>
+                    <b>{task.text}</b>
+                    <small>{task.sourceDate.replaceAll("-", ".")} 미완료</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p>
+              {isWeekend
+                ? "이번 주에 밀린 일이 없습니다. 충분히 쉬고 다음 주를 준비하세요."
+                : "현재 주말로 넘길 미완료 항목이 없습니다."}
+            </p>
+          )}
+          <p className="catchup-guide">
+            평일에 체크하지 못한 항목은 자동으로 이곳에 모입니다. 주말에 완료하면 원래 날짜의 체크리스트에도 반영됩니다.
+          </p>
+        </div>
       </article>
     </section>
   );
