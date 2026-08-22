@@ -1,6 +1,54 @@
 .bottom {
   display: none;
 }
+.navigation-hub {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.navigation-hub button {
+  display: grid;
+  grid-template-columns: 42px 1fr max-content;
+  align-items: center;
+  gap: 14px;
+  min-height: 118px;
+  border: 1px solid #dce3dd;
+  background: white;
+  padding: 20px;
+  color: #22362d;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.navigation-hub button:hover {
+  border-color: #83a950;
+  transform: translateY(-2px);
+}
+.navigation-hub button > svg {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  background: #eaf2e4;
+  color: #52733f;
+}
+.navigation-hub button span {
+  display: grid;
+  gap: 6px;
+}
+.navigation-hub button span b {
+  font-size: 15px;
+}
+.navigation-hub button span small {
+  color: #718078;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.navigation-hub button > i {
+  color: #65804f;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
 .security {
   background: #fff3dc;
   border: 1px solid #ecd49f;
@@ -480,6 +528,17 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .navigation-hub {
+    grid-template-columns: 1fr;
+  }
+  .navigation-hub button {
+    grid-template-columns: 36px 1fr;
+    min-height: 100px;
+    padding: 16px;
+  }
+  .navigation-hub button > i {
+    display: none;
+  }
   .interview-edit {
     grid-template-columns: 1fr;
   }

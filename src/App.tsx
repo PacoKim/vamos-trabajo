@@ -19,11 +19,15 @@ import {
   Sparkles,
   Target,
   Upload,
+  Wrench,
   X,
 } from "lucide-react";
 
 type View =
   | "dashboard"
+  | "careerHub"
+  | "learningHub"
+  | "recruitHub"
   | "career"
   | "planner"
   | "study"
@@ -330,18 +334,36 @@ const weeks: Week[] = raw.map((w, i) => ({
 }));
 const nav: [[View, string, any], ...any[]] = [
   ["dashboard", "대시보드", BarChart3],
-  ["career", "취업 전략", Target],
-  ["planner", "주간 일정", BookOpen],
-  ["study", "20주 학습", GraduationCap],
-  ["project", "HW 프로젝트", FolderKanban],
-  ["circuitStarter", "회로 프로젝트 입문", GraduationCap],
-  ["journal", "빠른 기록·경험", Sparkles],
-  ["applications", "지원 관리", BriefcaseBusiness],
-  ["skills", "역량 관리", GraduationCap],
-  ["interview", "면접 질문", FileQuestion],
-  ["review", "주간 회고", RotateCcw],
+  ["careerHub", "취업 준비", Target],
+  ["learningHub", "학습·프로젝트", BookOpen],
+  ["journal", "기록·경험", Sparkles],
+  ["recruitHub", "지원·면접", BriefcaseBusiness],
   ["settings", "설정·백업", Settings],
 ];
+const viewTitles: Partial<Record<View, string>> = {
+  career: "취업 전략",
+  planner: "주간 일정",
+  study: "20주 학습",
+  project: "HW 프로젝트",
+  circuitStarter: "회로 프로젝트 입문",
+  applications: "지원 관리",
+  skills: "역량 관리",
+  interview: "면접 질문",
+  review: "주간 회고",
+  experience: "경험 보관함",
+};
+const navGroup: Partial<Record<View, View>> = {
+  career: "careerHub",
+  planner: "learningHub",
+  study: "learningHub",
+  project: "learningHub",
+  circuitStarter: "learningHub",
+  skills: "learningHub",
+  review: "learningHub",
+  applications: "recruitHub",
+  interview: "recruitHub",
+  experience: "journal",
+};
 const skillNames = [
   "Circuit Fundamentals",
   "Analog Circuit",
@@ -391,7 +413,7 @@ export default function App() {
           {nav.map(([id, label, Icon]) => (
             <button
               key={id}
-              className={view === id ? "active" : ""}
+              className={view === id || navGroup[view] === id ? "active" : ""}
               onClick={() => go(id)}
             >
               <Icon size={18} />
@@ -412,7 +434,7 @@ export default function App() {
           </button>
           <div>
             <small>2026년 취업 준비</small>
-            <b>{nav.find((n) => n[0] === view)?.[1]}</b>
+            <b>{nav.find((n) => n[0] === view)?.[1] || viewTitles[view]}</b>
           </div>
           <div className="deadline">
             <Target size={16} /> 최종 목표 <b>자동차 전장 HW R&D 취업</b>
@@ -424,6 +446,99 @@ export default function App() {
             done={done}
             progress={progress}
             go={go}
+          />
+        )}{" "}
+        {view === "careerHub" && (
+          <NavigationHub
+            title="취업 준비"
+            sub="목표 직무 전략과 준비 우선순위를 한곳에서 확인합니다."
+            go={go}
+            items={[
+              [
+                "career",
+                "취업 전략",
+                "영어·인적성·자소서·포트폴리오 준비 기준",
+                Target,
+              ],
+              [
+                "applications",
+                "기업·직무 정보",
+                "현대자동차·기아·현대모비스 비교와 공고 관리",
+                BriefcaseBusiness,
+              ],
+            ]}
+          />
+        )}{" "}
+        {view === "learningHub" && (
+          <NavigationHub
+            title="학습·프로젝트"
+            sub="일정, 회로 입문, ECU 프로젝트와 역량 증거를 단계별로 관리합니다."
+            go={go}
+            items={[
+              [
+                "planner",
+                "주간 일정",
+                "출퇴근·헬스 일정을 반영한 일주일 학습 계획",
+                BookOpen,
+              ],
+              [
+                "study",
+                "20주 학습",
+                "회로 기초부터 PCB·측정까지 이어지는 커리큘럼",
+                GraduationCap,
+              ],
+              [
+                "circuitStarter",
+                "회로 프로젝트 입문",
+                "장비 구매·기초 실습·CAN·12V 전원 안내",
+                Wrench,
+              ],
+              [
+                "project",
+                "CAN Sensor ECU",
+                "요구사항부터 PCB와 디버깅까지 프로젝트 관리",
+                FolderKanban,
+              ],
+              [
+                "skills",
+                "역량 관리",
+                "지식·시뮬레이션·구현·측정·설명 증거",
+                BarChart3,
+              ],
+              [
+                "review",
+                "주간 회고",
+                "완료율과 미완료 작업을 다음 주 계획으로 연결",
+                RotateCcw,
+              ],
+            ]}
+          />
+        )}{" "}
+        {view === "recruitHub" && (
+          <NavigationHub
+            title="지원·면접"
+            sub="지원 공고와 기술면접 답변을 함께 준비합니다."
+            go={go}
+            items={[
+              [
+                "applications",
+                "지원 공고 관리",
+                "공고·부서·근무지·마감일·지원 상태 저장",
+                BriefcaseBusiness,
+              ],
+              [
+                "interview",
+                "면접 질문 보관함",
+                "질문 수정과 실제 경험 기반 답변 메모",
+                FileQuestion,
+              ],
+              [
+                "journal",
+                "경험·자소서 자료",
+                "빠른 기록을 STAR 경험과 GPT 분석으로 전환",
+                Sparkles,
+              ],
+            ]}
           />
         )}{" "}
         {view === "career" && <CareerStrategy />}{" "}
@@ -460,14 +575,14 @@ export default function App() {
       <nav className="bottom">
         {[
           ["dashboard", "홈", Home],
-          ["study", "학습", BookOpen],
-          ["project", "프로젝트", FolderKanban],
+          ["learningHub", "학습", BookOpen],
           ["journal", "기록", Sparkles],
-          ["review", "회고", RotateCcw],
+          ["recruitHub", "지원", BriefcaseBusiness],
+          ["careerHub", "취업", Target],
         ].map(([id, label, Icon]: any) => (
           <button
             key={id}
-            className={view === id ? "active" : ""}
+            className={view === id || navGroup[view] === id ? "active" : ""}
             onClick={() => go(id)}
           >
             <Icon />
@@ -477,6 +592,34 @@ export default function App() {
       </nav>
       {menu && <div className="scrim" onClick={() => setMenu(false)} />}
     </div>
+  );
+}
+function NavigationHub({
+  title,
+  sub,
+  items,
+  go,
+}: {
+  title: string;
+  sub: string;
+  items: any[];
+  go: (v: View) => void;
+}) {
+  return (
+    <Page title={title} sub={sub}>
+      <div className="navigation-hub">
+        {items.map(([id, name, description, Icon]) => (
+          <button key={id} onClick={() => go(id)}>
+            <Icon />
+            <span>
+              <b>{name}</b>
+              <small>{description}</small>
+            </span>
+            <i>열기 →</i>
+          </button>
+        ))}
+      </div>
+    </Page>
   );
 }
 function Dashboard({
@@ -509,7 +652,7 @@ function Dashboard({
         </div>
         <aside className="target">
           <small>TARGET COMPANIES</small>
-          {["01  현대자동차", "02  현대모비스", "03  기아"].map((x) => (
+          {["01  현대자동차", "02  기아", "03  현대모비스"].map((x) => (
             <b key={x}>{x}</b>
           ))}
           <hr />
@@ -709,7 +852,7 @@ function Applications() {
     },
     {
       company: "현대모비스",
-      priority: "2순위",
+      priority: "3순위",
       place:
         "주요 관련 거점: 마북연구소(경기 용인), 의왕연구소, 강남연구소 및 공고별 근무지",
       intro:
@@ -738,7 +881,7 @@ function Applications() {
     },
     {
       company: "기아",
-      priority: "3순위",
+      priority: "2순위",
       place:
         "본사: 서울 / 주요 통합 R&D: 남양연구소(경기 화성), 환경기술연구소(용인) 및 공고별 근무지",
       intro:
@@ -763,6 +906,11 @@ function Applications() {
       ],
     },
   ];
+  const sortedProfiles = [...profiles].sort(
+    (a, b) =>
+      ["현대자동차", "기아", "현대모비스"].indexOf(a.company) -
+      ["현대자동차", "기아", "현대모비스"].indexOf(b.company),
+  );
   const [apps, setApps] = useState<any[]>(() =>
     JSON.parse(localStorage.getItem("ahw-apps") || "[]"),
   );
@@ -800,7 +948,7 @@ function Applications() {
       sub="직접 찾은 공고를 저장하고, 회사·부서·직무별 차이와 필요한 역량을 함께 비교합니다."
     >
       <div className="companies">
-        {profiles.map((p, i) => (
+        {sortedProfiles.map((p, i) => (
           <article
             className={
               open === p.company ? "company-card open" : "company-card"
@@ -860,7 +1008,7 @@ function Applications() {
               value={formCompany}
               onChange={(e) => setFormCompany(e.target.value)}
             >
-              {profiles.map((p) => (
+              {sortedProfiles.map((p) => (
                 <option key={p.company}>{p.company}</option>
               ))}
             </select>
@@ -1032,7 +1180,7 @@ function Journal({
         "측정 조건, 본인이 직접 수행한 범위, 비교 결과와 후속 결정의 근거",
     });
   };
-  const gptPrompt = `다음은 ${formatDate(date)}에 직접 수행한 경험 기록이야. 자동차 전장 HW R&D 직무(현대자동차·현대모비스·기아) 자소서에 활용하려고 해.\n\n[원문 기록]\n${value}\n\n다음 기준으로 분석해줘.\n1. 사실을 과장하거나 없던 행동을 만들지 말 것\n2. 상황(S)·과제(T)·행동(A)·결과(R)로 구분할 것\n3. 내가 직접 한 행동, 사용한 장비·기술, 판단 근거를 찾아줄 것\n4. 부족한 수치나 확인해야 할 사실은 질문으로 남길 것\n5. 자소서에서 유리한 역량과 적합한 문항을 추천할 것\n6. 700자 자소서 초안을 작성할 것`;
+  const gptPrompt = `다음은 ${formatDate(date)}에 직접 수행한 경험 기록이야. 자동차 전장 HW R&D 직무(1순위 현대자동차·2순위 기아·3순위 현대모비스) 자소서에 활용하려고 해.\n\n[원문 기록]\n${value}\n\n다음 기준으로 분석해줘.\n1. 사실을 과장하거나 없던 행동을 만들지 말 것\n2. 상황(S)·과제(T)·행동(A)·결과(R)로 구분할 것\n3. 내가 직접 한 행동, 사용한 장비·기술, 판단 근거를 찾아줄 것\n4. 부족한 수치나 확인해야 할 사실은 질문으로 남길 것\n5. 자소서에서 유리한 역량과 적합한 문항을 추천할 것\n6. 700자 자소서 초안을 작성할 것`;
   const copyPrompt = async () => {
     if (!value.trim()) return;
     await navigator.clipboard.writeText(gptPrompt);
@@ -1854,7 +2002,7 @@ function CareerStrategy() {
   return (
     <Page
       title="취업 준비 전략"
-      sub="현대자동차·현대모비스·기아 자동차 전장 HW/회로설계 지원을 위해 무엇을 준비하고 어떤 증거를 남길지 정리했습니다."
+      sub="현대자동차·기아·현대모비스 자동차 전장 HW/회로설계 지원을 위해 무엇을 준비하고 어떤 증거를 남길지 정리했습니다."
     >
       <div className="priority-banner">
         <b>준비 우선순위</b>
