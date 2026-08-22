@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import CircuitStarter from "./CircuitStarter";
 import {
   BarChart3,
   BookOpen,
@@ -31,6 +32,7 @@ type View =
   | "journal"
   | "interview"
   | "project"
+  | "circuitStarter"
   | "experience"
   | "review"
   | "settings";
@@ -332,6 +334,7 @@ const nav: [[View, string, any], ...any[]] = [
   ["planner", "주간 일정", BookOpen],
   ["study", "20주 학습", GraduationCap],
   ["project", "HW 프로젝트", FolderKanban],
+  ["circuitStarter", "회로 프로젝트 입문", GraduationCap],
   ["journal", "빠른 기록·경험", Sparkles],
   ["applications", "지원 관리", BriefcaseBusiness],
   ["skills", "역량 관리", GraduationCap],
@@ -434,7 +437,16 @@ export default function App() {
             setDone={setDone}
           />
         )}{" "}
-        {view === "project" && <Project />}{" "}
+        {view === "project" && <Project go={go} />}{" "}
+        {view === "circuitStarter" && (
+          <CircuitStarter
+            onSendToJournal={(text, date) => {
+              setJournal(text);
+              localStorage.setItem("ahw-journal-date", date);
+              go("journal");
+            }}
+          />
+        )}{" "}
         {view === "applications" && <Applications />}{" "}
         {view === "skills" && <Skills completed={completed} />}{" "}
         {view === "journal" && (
@@ -1096,12 +1108,17 @@ function Journal({
         />
         <div className="journal-flow">
           <b>정리 순서</b>
-          <span>① 원문 작성 → ② GPT 질문 복사 → ③ 답변 붙여넣기 → ④ 분석·저장</span>
+          <span>
+            ① 원문 작성 → ② GPT 질문 복사 → ③ 답변 붙여넣기 → ④ 분석·저장
+          </span>
         </div>
         <section className="gpt-workspace">
           <div>
             <small>GPT에게 물어볼 질문</small>
-            <p>현재 기록을 STAR 구조, 직무 역량, 보완 질문과 700자 자소서 초안으로 요청합니다.</p>
+            <p>
+              현재 기록을 STAR 구조, 직무 역량, 보완 질문과 700자 자소서
+              초안으로 요청합니다.
+            </p>
             <button type="button" onClick={copyPrompt} disabled={!value.trim()}>
               GPT 질문 복사
             </button>
@@ -1153,12 +1170,18 @@ function Journal({
           </button>
         </article>
       )}
-      {saved && <div className="save-notice">경험이 저장되었습니다. 아래 목록에서 바로 확인할 수 있습니다.</div>}
+      {saved && (
+        <div className="save-notice">
+          경험이 저장되었습니다. 아래 목록에서 바로 확인할 수 있습니다.
+        </div>
+      )}
       <section className="bank-section">
         <div className="section-heading">
           <small>EXPERIENCE BANK</small>
           <h2>저장된 경험과 자소서 활용법</h2>
-          <p>카드를 눌러 STAR 구조, 추천 문항과 저장한 GPT 답변을 확인하세요.</p>
+          <p>
+            카드를 눌러 STAR 구조, 추천 문항과 저장한 GPT 답변을 확인하세요.
+          </p>
         </div>
         <Experience key={revision} embedded />
       </section>
@@ -1190,7 +1213,7 @@ function Interview() {
     </Page>
   );
 }
-function Project() {
+function Project({ go }: { go: (v: View) => void }) {
   const stages = [
     "Requirements",
     "Block Diagram",
@@ -1276,6 +1299,9 @@ function Project() {
           </label>
         ))}
       </article>
+      <button className="starter-link" onClick={() => go("circuitStarter")}>
+        장비가 없고 회로가 처음이라면 · 회로 프로젝트 입문 열기 →
+      </button>
     </Page>
   );
 }
@@ -1422,7 +1448,11 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
             {open === x.id && (
               <div className="experience-detail">
                 {editing === x.id && draft && (
-                  <form className="experience-edit" onSubmit={saveEdit} onClick={(e) => e.stopPropagation()}>
+                  <form
+                    className="experience-edit"
+                    onSubmit={saveEdit}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="edit-heading">
                       <div>
                         <small>SAVED EXPERIENCE EDIT</small>
@@ -1436,7 +1466,9 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                         <input
                           type="date"
                           value={draft.date || ""}
-                          onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+                          onChange={(e) =>
+                            setDraft({ ...draft, date: e.target.value })
+                          }
                         />
                       </label>
                       <label>
@@ -1444,14 +1476,18 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                         <input
                           required
                           value={draft.title || ""}
-                          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                          onChange={(e) =>
+                            setDraft({ ...draft, title: e.target.value })
+                          }
                         />
                       </label>
                       <label className="wide">
                         요약
                         <textarea
                           value={draft.summary || ""}
-                          onChange={(e) => setDraft({ ...draft, summary: e.target.value })}
+                          onChange={(e) =>
+                            setDraft({ ...draft, summary: e.target.value })
+                          }
                         />
                       </label>
                       <label className="wide">
@@ -1459,20 +1495,32 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                         <textarea
                           required
                           value={draft.source || ""}
-                          onChange={(e) => setDraft({ ...draft, source: e.target.value })}
+                          onChange={(e) =>
+                            setDraft({ ...draft, source: e.target.value })
+                          }
                         />
                       </label>
                       <label className="wide">
                         GPT 분석·자소서 초안
                         <textarea
                           value={draft.gptAnswer || ""}
-                          onChange={(e) => setDraft({ ...draft, gptAnswer: e.target.value })}
+                          onChange={(e) =>
+                            setDraft({ ...draft, gptAnswer: e.target.value })
+                          }
                         />
                       </label>
                     </div>
                     <div className="edit-buttons">
-                      <button type="button" className="cancel" onClick={cancelEdit}>취소</button>
-                      <button type="submit"><Save /> 수정 내용 저장</button>
+                      <button
+                        type="button"
+                        className="cancel"
+                        onClick={cancelEdit}
+                      >
+                        취소
+                      </button>
+                      <button type="submit">
+                        <Save /> 수정 내용 저장
+                      </button>
                     </div>
                   </form>
                 )}
