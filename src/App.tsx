@@ -928,27 +928,50 @@ function Dashboard({
             주간 학습 열기 →
           </button>
         </article>
-        <article className="panel">
-          <small>LEARNING LOOP</small>
-          <h2>실무형 학습 원칙</h2>
-          <div className="loop">
-            {[
-              "Concept",
-              "Circuit",
-              "Simulation",
-              "Implementation",
-              "Automotive",
-              "Interview",
-            ].map((x, i) => (
-              <span key={x}>
-                {i + 1}
-                <b>{x}</b>
+        <article className="panel job-priorities">
+          <small>JOB PREPARATION PRIORITY</small>
+          <h2>지금 취업을 위해 먼저 확인할 것</h2>
+          {[
+            [
+              "1",
+              "직무 증거",
+              "직접 설계·측정·디버깅한 결과물이 있는가?",
+              "circuitStarter",
+            ],
+            [
+              "2",
+              "경험 정리",
+              "인턴과 프로젝트에서 내가 직접 한 행동이 구분되는가?",
+              "journal",
+            ],
+            [
+              "3",
+              "영어·인적성",
+              "지원 시점까지 필요한 점수와 반복 학습 계획이 있는가?",
+              "career",
+            ],
+            [
+              "4",
+              "기업·공고 분석",
+              "현대자동차·기아·현대모비스의 직무 차이를 설명할 수 있는가?",
+              "applications",
+            ],
+            [
+              "5",
+              "자소서·면접",
+              "주장을 뒷받침할 수치와 실제 사례가 준비되어 있는가?",
+              "interview",
+            ],
+          ].map(([rank, title, question, target]) => (
+            <button key={rank} onClick={() => go(target as View)}>
+              <i>{rank}</i>
+              <span>
+                <b>{title}</b>
+                <small>{question}</small>
               </span>
-            ))}
-          </div>
-          <p className="muted">
-            매주 결과물을 만들어 Portfolio와 기술면접 답변으로 연결합니다.
-          </p>
+              <em>점검 →</em>
+            </button>
+          ))}
         </article>
       </section>
     </>
@@ -1763,85 +1786,10 @@ function Project({ go }: { go: (v: View) => void }) {
   );
 }
 function Experience({ embedded = false }: { embedded?: boolean }) {
-  const seeds = [
-    {
-      id: 1,
-      title: "ESD 커패시터 고장 현상 조사",
-      category: "직무 문제해결 · 최우선 소재",
-      summary:
-        "자동차 전장제품 ESD 평가 중 특정 커패시터 고장 현상을 비교 시험하고 추가 조건 시험을 수행함.",
-      lesson:
-        "기술적 동작뿐 아니라 Reliability, Performance, Cost를 종합적으로 고려해야 함.",
-      missing: "용량 증가가 정확한 물리적 해결 원인이라고 단정하지 않음.",
-      questions: [
-        "어려운 문제를 해결했던 경험",
-        "회로 평가 과정에서 배운 점",
-        "성능과 원가가 충돌했던 경험",
-      ],
-      guide: [
-        "상황: 한국알프스 회로설계기술팀 인턴 중 ESD 평가 수행",
-        "과제: 특정 위치의 고장 현상을 재현·비교하고 검토 자료 확보",
-        "행동: 동일 샘플 비교, 조건 변경 재시험, 결과를 담당 설계자와 논의",
-        "결과: 용량 증가 조건에서 기존 고장이 재현되지 않았음을 확인",
-        "배움: 확인된 사실과 가설을 구분하고 신뢰성·성능·원가를 함께 판단",
-      ],
-      advantage:
-        "실제 자동차 전장 평가, 비교시험, 설계자 협업, Cost 판단이 한 경험 안에 있어 현대차·모비스 HW 직무와 직접 연결됩니다.",
-    },
-    {
-      id: 2,
-      title: "CAN Sensor ECU 개인 프로젝트",
-      category: "직무 역량 · 포트폴리오 핵심",
-      summary:
-        "회로 실무 경험 부족을 보완하기 위해 요구사항부터 Simulation, PCB, 측정과 Debugging까지 직접 수행하는 프로젝트.",
-      lesson:
-        "모르는 도구를 학습하고 설계 전 과정을 완주한 성장 과정 자체가 강점.",
-      missing:
-        "각 단계의 선택 근거, 실패, 측정 파형과 개선 전후 비교를 기록해야 함.",
-      questions: [
-        "직접 설계해본 회로가 있습니까",
-        "부품을 왜 선택했습니까",
-        "회로 문제를 어떻게 해결했습니까",
-      ],
-      guide: [
-        "상황: PCB·LTspice·MCU 실습 경험이 부족한 상태",
-        "과제: 12V 입력 CAN Sensor ECU를 직접 설계",
-        "행동: 요구사항→Block→선정→Simulation→KiCad→측정 순으로 수행",
-        "결과: 실제 완성 수준과 측정 결과를 정량적으로 기록",
-        "배움: 설계 근거와 Debugging 사고방식",
-      ],
-      advantage:
-        "지원자가 가장 자주 받는 ‘직접 설계한 회로’ 질문에 결과물과 측정 증거로 답할 수 있습니다.",
-    },
-    {
-      id: 3,
-      title: "새로봇 지능형 로봇 경진대회",
-      category: "도전 · 구현 · 협업",
-      summary:
-        "Servo Motor와 3D Printer, Arduino 센서 제어를 활용해 비행 동작을 모사하는 로봇 제작.",
-      lesson: "아이디어를 실제 구조물과 제어 시스템으로 구현한 경험.",
-      missing: "본인의 정확한 역할, 가장 큰 기술 문제, 수정 전후 결과를 보강.",
-      questions: [
-        "도전적인 목표를 수행한 경험",
-        "팀 프로젝트에서 맡은 역할",
-        "실패를 개선한 경험",
-      ],
-      guide: [
-        "상황과 대회 목표를 한 문장으로 설명",
-        "본인 담당 센서·Servo 제어 범위를 명확히 구분",
-        "발생한 기술 문제와 원인 가설 제시",
-        "수정 행동과 검증 결과를 수치·현상으로 표현",
-        "직무에 연결되는 구현·협업 역량으로 마무리",
-      ],
-      advantage:
-        "단순 참여가 아니라 하드웨어 구현과 제어 경험으로 정리하면 전장 HW 직무의 실행력 소재가 됩니다.",
-    },
-  ];
-  const [items, setItems] = useState<any[]>(() => [
-    ...seeds,
-    ...JSON.parse(localStorage.getItem("ahw-experiences") || "[]"),
-  ]);
-  const [open, setOpen] = useState<number | string>(1);
+  const [items, setItems] = useState<any[]>(() =>
+    JSON.parse(localStorage.getItem("ahw-experiences") || "[]"),
+  );
+  const [open, setOpen] = useState<number | string>("");
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>(null);
   const startEdit = (x: any, e: React.MouseEvent) => {
@@ -1877,6 +1825,16 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
         </div>
       )}
       <div className="experience-list">
+        {!items.length && (
+          <div className="experience-empty">
+            <Sparkles />
+            <b>아직 직접 저장한 경험이 없습니다.</b>
+            <span>
+              위 빠른 기록에 실제로 한 일을 작성하고 분석한 뒤 저장하면 여기에
+              표시됩니다.
+            </span>
+          </div>
+        )}
         {items.map((x: any) => (
           <article
             className={

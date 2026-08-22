@@ -262,6 +262,100 @@
 .daily-checklist > form button svg {
   width: 13px;
 }
+.job-priorities {
+  display: grid;
+  align-content: start;
+}
+.job-priorities > button {
+  display: grid;
+  grid-template-columns: 28px 1fr max-content;
+  align-items: center;
+  gap: 10px;
+  min-height: 51px;
+  border: 0;
+  border-top: 1px solid #e5eae6;
+  background: white;
+  padding: 9px 2px;
+  color: #253a30;
+  text-align: left;
+  cursor: pointer;
+}
+.job-priorities > button > i {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  background: #eaf2e4;
+  color: #52733f;
+  font: 800 9px Manrope;
+  font-style: normal;
+}
+.job-priorities > button > span {
+  display: grid;
+  gap: 2px;
+}
+.job-priorities > button span b {
+  font-size: 11px;
+}
+.job-priorities > button span small {
+  color: #74827a;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.job-priorities > button em {
+  color: #66834f;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+.journal .actions button,
+.analysis > button,
+.gpt-workspace button {
+  min-height: 34px;
+  width: max-content;
+  padding: 8px 11px;
+  font-size: 10px;
+  line-height: 1;
+}
+.journal .actions button svg,
+.analysis > button svg {
+  width: 13px;
+}
+.experience-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.experience-actions button {
+  padding: 6px 9px;
+  font-size: 9px;
+}
+.experience-empty {
+  grid-column: 1 / -1;
+  min-height: 170px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  border: 1px dashed #bdcac0;
+  background: #f7f9f6;
+  color: #6d7d74;
+  text-align: center;
+  padding: 25px;
+}
+.experience-empty svg {
+  width: 25px;
+  color: #73934d;
+}
+.experience-empty b {
+  color: #365244;
+  font-size: 12px;
+}
+.experience-empty span {
+  max-width: 430px;
+  font-size: 10px;
+  line-height: 1.6;
+}
 .dash {
   padding-top: 0;
 }
@@ -510,17 +604,18 @@
   background: #eef4e9;
 }
 .experience-actions {
-  display: grid;
-  justify-items: end;
-  gap: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
   min-width: max-content;
 }
 .experience-actions button {
   border: 1px solid #78907f;
   background: white;
   color: #355c48;
-  padding: 7px 12px;
-  font-size: 10px;
+  padding: 6px 9px;
+  font-size: 9px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -744,6 +839,16 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .job-priorities > button {
+    grid-template-columns: 28px 1fr;
+  }
+  .job-priorities > button em {
+    display: none;
+  }
+  .journal .actions {
+    align-items: flex-start;
+    gap: 9px;
+  }
   .restart-banner {
     grid-template-columns: 1fr;
     gap: 7px;
