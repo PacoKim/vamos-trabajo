@@ -634,6 +634,84 @@
   flex-wrap: wrap;
   align-items: flex-start;
 }
+.interview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 13px;
+  padding: 16px 18px;
+  background: #173027;
+  color: white;
+}
+.interview-toolbar > div {
+  display: grid;
+  gap: 4px;
+}
+.interview-toolbar b {
+  font-size: 12px;
+}
+.interview-toolbar span {
+  color: #a9bdb3;
+  font-size: 9px;
+}
+.interview-toolbar button,
+.interview-create > button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: max-content;
+  border: 0;
+  background: #b8e16d;
+  color: #183128;
+  padding: 8px 11px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.interview-toolbar button svg,
+.interview-create > button svg {
+  width: 13px;
+}
+.interview-create {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 10px;
+  margin-bottom: 13px;
+  padding: 17px;
+  border: 1px solid #bdcbc0;
+  background: #f5f8f4;
+}
+.interview-create label {
+  display: grid;
+  gap: 5px;
+  color: #496257;
+  font-size: 9px;
+  font-weight: 700;
+}
+.interview-create label:last-of-type {
+  grid-column: 1 / -1;
+}
+.interview-create input,
+.interview-create textarea {
+  width: 100%;
+  border: 1px solid #ced8d0;
+  background: white;
+  padding: 9px 10px;
+  font: inherit;
+  font-weight: 400;
+}
+.interview-create textarea {
+  min-height: 85px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.interview-create > button {
+  grid-column: 1 / -1;
+  justify-self: end;
+  background: #19382c;
+  color: white;
+}
 .interview-card > div:not(.interview-edit) {
   flex: 1;
   min-width: 0;
@@ -645,6 +723,14 @@
   padding: 7px 12px;
   font-size: 10px;
   font-weight: 700;
+  cursor: pointer;
+}
+.interview-delete-button {
+  border: 0;
+  background: transparent;
+  color: #9b6b61;
+  padding: 7px 4px;
+  font-size: 9px;
   cursor: pointer;
 }
 .answer-preview {
@@ -839,6 +925,19 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .interview-toolbar {
+    align-items: flex-start;
+  }
+  .interview-toolbar span {
+    display: none;
+  }
+  .interview-create {
+    grid-template-columns: 1fr;
+  }
+  .interview-create label:last-of-type,
+  .interview-create > button {
+    grid-column: auto;
+  }
   .job-priorities > button {
     grid-template-columns: 28px 1fr;
   }

@@ -462,15 +462,9 @@ export default function App() {
             items={[
               [
                 "career",
-                "취업 전략",
+                "취업 준비 전략",
                 "영어·인적성·자소서·포트폴리오 준비 기준",
                 Target,
-              ],
-              [
-                "applications",
-                "기업·직무 정보",
-                "현대자동차·기아·현대모비스 비교와 공고 관리",
-                BriefcaseBusiness,
               ],
             ]}
           />
@@ -535,14 +529,8 @@ export default function App() {
               [
                 "interview",
                 "면접 질문 보관함",
-                "질문 수정과 실제 경험 기반 답변 메모",
+                "질문 직접 생성·수정과 실제 경험 기반 답변 메모",
                 FileQuestion,
-              ],
-              [
-                "journal",
-                "경험·자소서 자료",
-                "빠른 기록을 STAR 경험과 GPT 분석으로 전환",
-                Sparkles,
               ],
             ]}
           />
@@ -1599,13 +1587,24 @@ function Interview() {
   );
   const [qs, setQs] = useState(() => {
     const saved = JSON.parse(localStorage.getItem("ahw-interview") || "[]");
-    return defaults.map((item) => ({
+    const standard = defaults.map((item) => ({
       ...item,
       ...(saved.find((x: any) => x.week === item.week) || {}),
     }));
+    const custom = saved.filter(
+      (item: any) =>
+        item.custom || !defaults.some((base) => base.week === item.week),
+    );
+    return [...standard, ...custom];
   });
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>(null);
+  const [creating, setCreating] = useState(false);
+  const [newQuestion, setNewQuestion] = useState({
+    title: "",
+    q: "",
+    answer: "",
+  });
   const startEdit = (item: any) => {
     setEditing(item.week);
     setDraft({ ...item });
@@ -1618,15 +1617,83 @@ function Interview() {
     setEditing(null);
     setDraft(null);
   };
+  const saveNew = (e: React.FormEvent) => {
+    e.preventDefault();
+    const item = {
+      ...newQuestion,
+      week: Date.now(),
+      custom: true,
+    };
+    const updated = [...qs, item];
+    setQs(updated);
+    localStorage.setItem("ahw-interview", JSON.stringify(updated));
+    setNewQuestion({ title: "", q: "", answer: "" });
+    setCreating(false);
+  };
+  const removeQuestion = (week: number) => {
+    const updated = qs.filter((item) => item.week !== week);
+    setQs(updated);
+    localStorage.setItem("ahw-interview", JSON.stringify(updated));
+  };
   return (
     <Page
       title="면접 질문 보관함"
       sub="질문을 내 지원 직무에 맞게 수정하고, 실제 경험에 근거한 답변을 준비합니다."
     >
+      <div className="interview-toolbar">
+        <div>
+          <b>내 질문을 직접 추가할 수 있습니다.</b>
+          <span>
+            지원 공고나 면접 후 받은 질문을 저장하고 답변을 준비하세요.
+          </span>
+        </div>
+        <button onClick={() => setCreating(!creating)}>
+          <Plus /> {creating ? "작성 닫기" : "새 질문 만들기"}
+        </button>
+      </div>
+      {creating && (
+        <form className="interview-create" onSubmit={saveNew}>
+          <label>
+            질문 분류
+            <input
+              required
+              value={newQuestion.title}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, title: e.target.value })
+              }
+              placeholder="예: 현대자동차 직무면접·회로설계"
+            />
+          </label>
+          <label>
+            면접 질문
+            <textarea
+              required
+              value={newQuestion.q}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, q: e.target.value })
+              }
+              placeholder="질문을 정확하게 입력하세요."
+            />
+          </label>
+          <label>
+            내 답변 메모
+            <textarea
+              value={newQuestion.answer}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, answer: e.target.value })
+              }
+              placeholder="상황 → 문제 → 직접 한 행동 → 결과 → 배운 점"
+            />
+          </label>
+          <button type="submit">
+            <Save /> 질문 저장
+          </button>
+        </form>
+      )}
       <div className="questions">
         {qs.map((x) => (
           <article className="interview-card" key={x.week}>
-            <b>W{x.week}</b>
+            <b>{x.custom ? "MY" : `W${x.week}`}</b>
             <div>
               <small>{x.title}</small>
               <h2>{x.q}</h2>
@@ -1642,6 +1709,14 @@ function Interview() {
             >
               수정
             </button>
+            {x.custom && (
+              <button
+                className="interview-delete-button"
+                onClick={() => removeQuestion(x.week)}
+              >
+                삭제
+              </button>
+            )}
             {editing === x.week && draft && (
               <form className="interview-edit" onSubmit={saveEdit}>
                 <label>
