@@ -1189,24 +1189,106 @@ function Journal({
   );
 }
 function Interview() {
-  const qs = useMemo(
-    () => weeks.map((w) => ({ week: w.n, title: w.title, q: w.question })),
+  const defaults = useMemo(
+    () =>
+      weeks.map((w) => ({
+        week: w.n,
+        title: w.title,
+        q: w.question,
+        answer: "",
+      })),
     [],
   );
+  const [qs, setQs] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem("ahw-interview") || "[]");
+    return defaults.map((item) => ({
+      ...item,
+      ...(saved.find((x: any) => x.week === item.week) || {}),
+    }));
+  });
+  const [editing, setEditing] = useState<number | null>(null);
+  const [draft, setDraft] = useState<any>(null);
+  const startEdit = (item: any) => {
+    setEditing(item.week);
+    setDraft({ ...item });
+  };
+  const saveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated = qs.map((item) => (item.week === draft.week ? draft : item));
+    setQs(updated);
+    localStorage.setItem("ahw-interview", JSON.stringify(updated));
+    setEditing(null);
+    setDraft(null);
+  };
   return (
     <Page
-      title="Interview Question Bank"
-      sub="주간 학습을 실제 경험에 근거한 답변으로 전환합니다."
+      title="면접 질문 보관함"
+      sub="질문을 내 지원 직무에 맞게 수정하고, 실제 경험에 근거한 답변을 준비합니다."
     >
       <div className="questions">
         {qs.map((x) => (
-          <article key={x.week}>
+          <article className="interview-card" key={x.week}>
             <b>W{x.week}</b>
             <div>
               <small>{x.title}</small>
               <h2>{x.q}</h2>
-              <p>문제–가설–측정–결과 구조로 답변을 준비하세요.</p>
+              {x.answer ? (
+                <p className="answer-preview">{x.answer}</p>
+              ) : (
+                <p>문제–가설–측정–결과 구조로 답변을 준비하세요.</p>
+              )}
             </div>
+            <button
+              className="interview-edit-button"
+              onClick={() => startEdit(x)}
+            >
+              수정
+            </button>
+            {editing === x.week && draft && (
+              <form className="interview-edit" onSubmit={saveEdit}>
+                <label>
+                  학습 주제
+                  <input
+                    value={draft.title}
+                    onChange={(e) =>
+                      setDraft({ ...draft, title: e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  면접 질문
+                  <textarea
+                    required
+                    value={draft.q}
+                    onChange={(e) => setDraft({ ...draft, q: e.target.value })}
+                  />
+                </label>
+                <label>
+                  내 답변 메모
+                  <textarea
+                    value={draft.answer}
+                    onChange={(e) =>
+                      setDraft({ ...draft, answer: e.target.value })
+                    }
+                    placeholder="실제 상황 → 문제와 가설 → 직접 한 행동 → 측정 결과 → 배운 점"
+                  />
+                </label>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(null);
+                      setDraft(null);
+                    }}
+                  >
+                    취소
+                  </button>
+                  <button type="submit">
+                    <Save /> 수정 내용 저장
+                  </button>
+                </div>
+              </form>
+            )}
           </article>
         ))}
       </div>

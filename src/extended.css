@@ -270,6 +270,89 @@
   border: 1px solid #bfcfc2;
   background: #f5f8f4;
 }
+.interview-card {
+  position: relative;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.interview-card > div:not(.interview-edit) {
+  flex: 1;
+  min-width: 0;
+}
+.interview-edit-button {
+  border: 1px solid #78907f;
+  background: white;
+  color: #355c48;
+  padding: 7px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.answer-preview {
+  max-height: 66px;
+  overflow: hidden;
+  white-space: pre-wrap;
+  line-height: 1.65 !important;
+  color: #53675c !important;
+}
+.interview-edit {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 11px;
+  margin-top: 12px;
+  padding: 16px;
+  border-top: 1px solid #dce3dd;
+  background: #f5f8f4;
+}
+.interview-edit label {
+  display: grid;
+  gap: 6px;
+  color: #496257;
+  font-size: 10px;
+  font-weight: 700;
+}
+.interview-edit label:last-of-type {
+  grid-column: 1 / -1;
+}
+.interview-edit input,
+.interview-edit textarea {
+  width: 100%;
+  border: 1px solid #ced8d0;
+  background: white;
+  padding: 10px;
+  font: inherit;
+  font-weight: 400;
+}
+.interview-edit textarea {
+  min-height: 95px;
+  resize: vertical;
+  line-height: 1.65;
+}
+.interview-edit > div {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.interview-edit button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #bdc9c0;
+  background: white;
+  color: #52665b;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.interview-edit button[type="submit"] {
+  border-color: #19382c;
+  background: #19382c;
+  color: white;
+}
+.interview-edit button svg {
+  width: 14px;
+}
 .edit-heading {
   display: flex;
   justify-content: space-between;
@@ -397,6 +480,13 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .interview-edit {
+    grid-template-columns: 1fr;
+  }
+  .interview-edit label:last-of-type,
+  .interview-edit > div {
+    grid-column: auto;
+  }
   .journal-date,
   .gpt-workspace {
     grid-template-columns: 1fr;
