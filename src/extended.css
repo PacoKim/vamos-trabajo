@@ -49,6 +49,172 @@
   font-style: normal;
   font-weight: 700;
 }
+.hero {
+  min-height: 285px;
+  padding: 40px 4vw 48px;
+}
+.hero .target {
+  width: 310px;
+  padding: 22px;
+}
+.metrics {
+  margin-top: -16px;
+  margin-bottom: 18px;
+}
+.daily-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
+  gap: 16px;
+  padding: 0 4vw 18px;
+}
+.daily-overview > article {
+  border: 1px solid #dce3dd;
+  background: white;
+  padding: 21px;
+}
+.daily-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.daily-heading small {
+  color: #789084;
+  font: 700 9px Manrope;
+  letter-spacing: 0.12em;
+}
+.daily-heading h2 {
+  margin: 4px 0 0;
+  font: 700 19px Manrope;
+}
+.daily-heading > span {
+  background: #eaf2e4;
+  color: #54713e;
+  padding: 7px 9px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.daily-heading > strong {
+  color: #52733f;
+  font: 800 25px Manrope;
+}
+.schedule-lines {
+  border-top: 1px solid #e3e8e4;
+}
+.schedule-lines p {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf0ed;
+  font-size: 10px;
+}
+.schedule-lines p b {
+  color: #456050;
+}
+.schedule-lines p span {
+  color: #68766f;
+}
+.today-schedule > button {
+  border: 0;
+  background: transparent;
+  color: #355e4b;
+  padding: 13px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.daily-progress {
+  height: 5px;
+  margin-bottom: 8px;
+  background: #e3e8e4;
+}
+.daily-progress i {
+  display: block;
+  height: 100%;
+  background: #83a950;
+  transition: width 0.2s;
+}
+.daily-tasks {
+  border-top: 1px solid #edf0ed;
+}
+.daily-tasks > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  border-bottom: 1px solid #edf0ed;
+  cursor: pointer;
+}
+.daily-tasks input {
+  display: none;
+}
+.daily-tasks label > i {
+  width: 21px;
+  height: 21px;
+  border: 1px solid #bdc8c1;
+  display: grid;
+  place-items: center;
+}
+.daily-tasks label > i svg {
+  width: 14px;
+  color: #527439;
+}
+.daily-tasks label > span {
+  flex: 1;
+  color: #4f6258;
+  font-size: 11px;
+}
+.daily-tasks input:checked ~ span {
+  color: #929d97;
+  text-decoration: line-through;
+}
+.daily-tasks label > button {
+  border: 0;
+  background: transparent;
+  color: #a0aba5;
+  padding: 5px;
+  cursor: pointer;
+}
+.daily-tasks label > button svg {
+  width: 14px;
+}
+.daily-tasks > p {
+  color: #89958e;
+  font-size: 10px;
+}
+.daily-checklist > form {
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  gap: 7px;
+  margin-top: 12px;
+}
+.daily-checklist > form input {
+  min-width: 0;
+  border: 1px solid #d5ddd7;
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 10px;
+}
+.daily-checklist > form button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: #19382c;
+  color: white;
+  padding: 9px 13px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.daily-checklist > form button svg {
+  width: 13px;
+}
+.dash {
+  padding-top: 0;
+}
 .security {
   background: #fff3dc;
   border: 1px solid #ecd49f;
@@ -528,6 +694,21 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .hero {
+    min-height: 0;
+    padding: 29px 20px 35px;
+  }
+  .hero .target {
+    width: calc(100% - 12px);
+    margin-top: 25px;
+  }
+  .daily-overview {
+    grid-template-columns: 1fr;
+    padding: 16px 14px 0;
+  }
+  .daily-overview > article {
+    padding: 17px;
+  }
   .navigation-hub {
     grid-template-columns: 1fr;
   }

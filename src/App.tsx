@@ -622,6 +622,192 @@ function NavigationHub({
     </Page>
   );
 }
+function DailyAgenda({ go }: { go: (v: View) => void }) {
+  const schedules = [
+    {
+      day: "일요일",
+      focus: "마무리·재계획",
+      events: [
+        ["오전", "프로젝트 또는 미완료 핵심 범위"],
+        ["오후", "헬스 1시간 30분"],
+        ["저녁", "영어·인적성 및 주간 회고"],
+      ],
+    },
+    {
+      day: "월요일",
+      focus: "회복·가벼운 복습",
+      events: [
+        ["출퇴근", "TOEIC Speaking·전장 용어"],
+        ["19:00", "헬스와 저녁"],
+        ["21:30", "이번 주 회로 개념 복습"],
+      ],
+    },
+    {
+      day: "화요일",
+      focus: "회로·Simulation",
+      events: [
+        ["출퇴근", "영어·인적성"],
+        ["20:00", "회로이론·전자회로"],
+        ["21:00", "LTspice 실습"],
+      ],
+    },
+    {
+      day: "수요일",
+      focus: "회복·정리",
+      events: [
+        ["출퇴근", "영어 Speaking"],
+        ["19:00", "헬스와 저녁"],
+        ["21:30", "Datasheet·기술노트 복습"],
+      ],
+    },
+    {
+      day: "목요일",
+      focus: "HW 프로젝트 집중",
+      events: [
+        ["출퇴근", "영어·인적성"],
+        ["20:00", "Automotive CAN Sensor ECU"],
+        ["마무리", "실수·선택 근거 기록"],
+      ],
+    },
+    {
+      day: "금요일",
+      focus: "휴식 우선",
+      events: [
+        ["출퇴근", "영어 Speaking"],
+        ["19:00", "헬스와 저녁"],
+        ["이후", "휴식 또는 20분 복습"],
+      ],
+    },
+    {
+      day: "토요일",
+      focus: "주간 핵심 실습",
+      events: [
+        ["오전", "회로·HW 프로젝트 3~4시간"],
+        ["오후", "영어 또는 인적성 1시간"],
+        ["마무리", "프로젝트 과정 기록 20분"],
+      ],
+    },
+  ];
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const dateKey = new Date(now.getTime() - offset * 60000)
+    .toISOString()
+    .slice(0, 10);
+  const schedule = schedules[now.getDay()];
+  const defaultTasks = schedule.events.map((event, i) => ({
+    id: `${dateKey}-${i}`,
+    text: event[1],
+    done: false,
+  }));
+  const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
+    const saved = JSON.parse(
+      localStorage.getItem("ahw-daily-checklists") || "{}",
+    );
+    return saved[dateKey] ? saved : { ...saved, [dateKey]: defaultTasks };
+  });
+  const [newTask, setNewTask] = useState("");
+  const tasks = allTasks[dateKey] || [];
+  useEffect(
+    () =>
+      localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks)),
+    [allTasks],
+  );
+  const setTasks = (next: any[]) =>
+    setAllTasks((all) => ({ ...all, [dateKey]: next }));
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.trim()) return;
+    setTasks([
+      ...tasks,
+      { id: `${dateKey}-${Date.now()}`, text: newTask.trim(), done: false },
+    ]);
+    setNewTask("");
+  };
+  const completed = tasks.filter((task) => task.done).length;
+  return (
+    <section className="daily-overview">
+      <article className="today-schedule">
+        <div className="daily-heading">
+          <div>
+            <small>TODAY · {dateKey.replaceAll("-", ".")}</small>
+            <h2>{schedule.day} 일정</h2>
+          </div>
+          <span>{schedule.focus}</span>
+        </div>
+        <div className="schedule-lines">
+          {schedule.events.map((event) => (
+            <p key={`${event[0]}-${event[1]}`}>
+              <b>{event[0]}</b>
+              <span>{event[1]}</span>
+            </p>
+          ))}
+        </div>
+        <button onClick={() => go("planner")}>전체 주간 일정 보기 →</button>
+      </article>
+      <article className="daily-checklist">
+        <div className="daily-heading">
+          <div>
+            <small>DAILY CHECKLIST</small>
+            <h2>오늘 해야 할 일</h2>
+          </div>
+          <strong>
+            {completed}/{tasks.length}
+          </strong>
+        </div>
+        <div className="daily-progress">
+          <i
+            style={{
+              width: `${tasks.length ? Math.round((completed / tasks.length) * 100) : 0}%`,
+            }}
+          />
+        </div>
+        <div className="daily-tasks">
+          {tasks.length ? (
+            tasks.map((task) => (
+              <label key={task.id}>
+                <input
+                  type="checkbox"
+                  checked={task.done}
+                  onChange={() =>
+                    setTasks(
+                      tasks.map((x) =>
+                        x.id === task.id ? { ...x, done: !x.done } : x,
+                      ),
+                    )
+                  }
+                />
+                <i>{task.done && <Check />}</i>
+                <span>{task.text}</span>
+                <button
+                  type="button"
+                  aria-label={`${task.text} 삭제`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setTasks(tasks.filter((x) => x.id !== task.id));
+                  }}
+                >
+                  <X />
+                </button>
+              </label>
+            ))
+          ) : (
+            <p>오늘의 할 일을 직접 추가해보세요.</p>
+          )}
+        </div>
+        <form onSubmit={addTask}>
+          <input
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            placeholder="오늘 할 일 추가"
+          />
+          <button type="submit">
+            <Plus /> 추가
+          </button>
+        </form>
+      </article>
+    </section>
+  );
+}
 function Dashboard({
   current,
   done,
@@ -637,6 +823,12 @@ function Dashboard({
     (current.tasks.filter((_, i) => done[`w${current.n}-${i}`]).length /
       current.tasks.length) *
       100,
+  );
+  const internshipD = Math.max(
+    0,
+    Math.ceil(
+      (new Date("2026-12-31T23:59:59+09:00").getTime() - Date.now()) / 86400000,
+    ),
   );
   return (
     <>
@@ -688,10 +880,11 @@ function Dashboard({
         </article>
         <article>
           <small>INTERNSHIP D-DAY</small>
-          <strong>D-136</strong>
+          <strong>D-{internshipD}</strong>
           <span>한국알프스 R&D</span>
         </article>
       </section>
+      <DailyAgenda go={go} />
       <section className="dash">
         <article className="panel">
           <small>THIS WEEK · W{current.n}</small>
