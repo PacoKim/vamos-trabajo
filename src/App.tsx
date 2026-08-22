@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import CircuitStarter from "./CircuitStarter";
+import CourseManager from "./CourseManager";
 import {
   BarChart3,
   BookOpen,
@@ -37,6 +38,7 @@ type View =
   | "interview"
   | "project"
   | "circuitStarter"
+  | "courses"
   | "experience"
   | "review"
   | "settings";
@@ -323,14 +325,256 @@ const raw = [
     "직접 설계한 회로를 설명해보라.",
   ],
 ] as const;
+const employmentCoursePlan = [
+  [
+    "강의 준비와 회로 기초 점검",
+    "COURSE PREP",
+    [
+      "강의 도구·KiCad·저장공간 준비",
+      "전압·전류·저항·전력 복습",
+      "Training과 Independent Project 구분",
+      "Evidence 폴더 구조 만들기",
+    ],
+    ["학습환경 Checklist", "기초 계산 노트"],
+    "이 강의를 취업 역량으로 어떻게 변환할 것인가?",
+  ],
+  [
+    "System-level과 HW 설계 Flow",
+    "COURSE W1",
+    [
+      "Lecture 1–7 시청·노트",
+      "Power Flow와 Signal Flow 직접 그리기",
+      "현대차·기아·모비스 HW 공고와 역량 연결",
+      "다른 사람에게 System-level 설명",
+    ],
+    ["System Block Diagram"],
+    "System-level 관점이 회로설계에 왜 필요한가?",
+  ],
+  [
+    "Requirement와 부품 선택 I",
+    "COURSE W2",
+    [
+      "Lecture 8–12 학습",
+      "요구사항을 전기적 사양으로 변환",
+      "MCU·PHY·ADC·Motor Driver 후보 비교",
+      "Datasheet 핵심 Parameter 기록",
+    ],
+    ["Requirement Sheet", "후보 부품 비교표"],
+    "요구사항에서 부품 사양을 어떻게 도출했는가?",
+  ],
+  [
+    "부품 선택 II와 Block Diagram",
+    "COURSE W3",
+    [
+      "Lecture 13–16 학습",
+      "MOSFET·DAC·MIC·I2C 선정 근거",
+      "정격·대안·원가 비교",
+      "Training Board Block Diagram 완성",
+    ],
+    ["Component Selection Table", "Block Diagram"],
+    "왜 이 부품과 정격을 선택했는가?",
+  ],
+  [
+    "Power Budget와 STM32 전원",
+    "COURSE W4",
+    [
+      "Lecture 17–24 학습",
+      "Rail별 전압·전류·전력 계산",
+      "Decoupling 위치와 값 근거 확인",
+      "차량 12V→MCU 전원 문제 추가학습",
+    ],
+    ["Power Budget", "STM32 Power Tree"],
+    "MCU 전원핀 주변 커패시터는 왜 필요한가?",
+  ],
+  [
+    "STM32 Clock·Reset·Debug 회로",
+    "COURSE W5",
+    [
+      "Lecture 25–33 학습",
+      "Clock Tree·Reset·Boot·SWD 분석",
+      "데이터시트 권장회로와 강의 회로 비교",
+      "회로를 블록별로 3분 설명",
+    ],
+    ["MCU Schematic Analysis", "3분 설명 노트"],
+    "첫 전원 인가 전 MCU 회로에서 무엇을 확인하는가?",
+  ],
+  [
+    "PHY·ESD·EMI와 보호경로",
+    "COURSE W6",
+    [
+      "Lecture 34–40 학습",
+      "ESD Current Path 가설 그리기",
+      "Protection·Bead·Transformer 배치 근거",
+      "차량 Connector·CAN 보호로 변환",
+    ],
+    ["ESD Path Analysis", "Protection Placement Note"],
+    "ESD 보호소자는 왜 커넥터 가까이에 배치하는가?",
+  ],
+  [
+    "Motor·ADC·DAC·LDO",
+    "COURSE W7",
+    [
+      "Lecture 41–59 학습",
+      "Load·Switching·Thermal 기준 비교",
+      "ADC Resolution·Sampling·Reference 분석",
+      "LDO PSRR·Dropout·Ripple 확인",
+    ],
+    ["Analog·Power 부품 선정표", "계산·Datasheet Evidence"],
+    "Mixed-signal 회로의 전원과 Ground를 어떻게 검토하는가?",
+  ],
+  [
+    "Mixed-Signal PCB Layout",
+    "COURSE W8",
+    [
+      "Lecture 60–76 학습",
+      "Placement·Return Path·GND·Differential 검토",
+      "Power·Analog·Digital 영역 설명",
+      "3D·DRC와 Rework Risk 기록",
+    ],
+    ["PCB Layout Review", "Design Review Checklist"],
+    "PCB 배치와 배선 순서를 어떤 근거로 정했는가?",
+  ],
+  [
+    "강의 Mastery와 취업 Evidence 완성",
+    "COURSE REVIEW",
+    [
+      "복습 필요 강의 재학습",
+      "Explain·Apply 미완료 항목 보완",
+      "Training Project Report 작성",
+      "강의 내용과 직접 수행 범위 구분",
+    ],
+    ["Training Project Technical Report", "Course Evidence Index"],
+    "완강률과 실제 설계 역량의 차이는 무엇인가?",
+  ],
+  [
+    "Automotive 요구사항 변환",
+    "INDEPENDENT",
+    [
+      "강의 보드를 그대로 복제하지 않기",
+      "12V·CAN·Sensor 요구사항 정의",
+      "신뢰성·성능·원가 우선순위 설정",
+      "검증 가능한 완료 기준 작성",
+    ],
+    ["Automotive ECU Requirements"],
+    "Training 지식을 자동차 요구사항으로 어떻게 변환했는가?",
+  ],
+  [
+    "Automotive ECU Architecture",
+    "INDEPENDENT",
+    [
+      "12V Input·Protection·Power·MCU·CAN 구조",
+      "입출력과 Interface 정의",
+      "Failure Mode 후보 정리",
+      "Block별 검증 방법 계획",
+    ],
+    ["ECU Block Diagram", "Verification Plan"],
+    "ECU 구조를 왜 이렇게 나누었는가?",
+  ],
+  [
+    "Automotive 부품 선정",
+    "INDEPENDENT",
+    [
+      "Regulator·MCU·CAN Transceiver 선정",
+      "TVS·역극성·Connector 검토",
+      "정격·대안·원가·수급 비교",
+      "Datasheet 근거 페이지 기록",
+    ],
+    ["Automotive Component Table"],
+    "일반 부품과 자동차용 부품의 선택 기준 차이는?",
+  ],
+  [
+    "전원·보호회로 Simulation",
+    "INDEPENDENT",
+    [
+      "12V→5V→3.3V 전원 설계",
+      "입력 보호와 Decoupling 검토",
+      "LTspice로 주요 조건 비교",
+      "예상·Simulation 차이 기록",
+    ],
+    ["Power Simulation Report"],
+    "차량 전원에서 고려해야 할 과도조건은 무엇인가?",
+  ],
+  [
+    "ECU Schematic",
+    "INDEPENDENT",
+    [
+      "Power·MCU·CAN·Sensor 회로 작성",
+      "Training 회로 참고 범위 표시",
+      "ERC와 Design Review",
+      "Block별 선정 근거 설명",
+    ],
+    ["ECU Schematic V1"],
+    "직접 설계한 부분과 참고한 부분을 구분해보라.",
+  ],
+  [
+    "ECU PCB Layout",
+    "INDEPENDENT",
+    [
+      "Placement 우선순위 결정",
+      "Power·Ground·CAN Return Path 검토",
+      "Protection과 Decoupling 배치",
+      "DRC·3D Review",
+    ],
+    ["ECU PCB V1", "Layout Review"],
+    "EMC를 고려해 어떤 배치 결정을 했는가?",
+  ],
+  [
+    "제작 준비와 Review",
+    "BUILD",
+    [
+      "BOM·Gerber·정격 재검토",
+      "전원 Short·극성 Checklist",
+      "가능하면 PCB 주문",
+      "제작하지 못하면 Peer Review 강화",
+    ],
+    ["Gerber·BOM", "Bring-up Checklist"],
+    "제작 전 어떤 위험을 제거했는가?",
+  ],
+  [
+    "Bring-up과 Measurement",
+    "VALIDATION",
+    [
+      "전류 제한 후 단계별 전원 인가",
+      "Rail Voltage·Current 측정",
+      "MCU·Sensor·CAN 확인",
+      "예상값과 측정값 비교",
+    ],
+    ["Measurement Result"],
+    "첫 전원 인가 절차와 판단 기준은?",
+  ],
+  [
+    "Debugging과 개선",
+    "VALIDATION",
+    [
+      "Problem·Hypothesis 작성",
+      "측정으로 원인 후보 축소",
+      "수정 후 동일 조건 재시험",
+      "확인된 사실과 추정 구분",
+    ],
+    ["Debugging Report"],
+    "회로 문제를 어떤 순서로 분석했는가?",
+  ],
+  [
+    "취업 포트폴리오와 면접",
+    "PORTFOLIO",
+    [
+      "Training·Independent Project 구분",
+      "요구사항→근거→측정 Story 작성",
+      "자소서 STAR와 3분 발표",
+      "현대차·기아·모비스 직무별 강조점 조정",
+    ],
+    ["Automotive HW Portfolio", "Interview Deck"],
+    "직접 만든 회로와 설계 판단을 설명해보라.",
+  ],
+] as const;
 const weeks: Week[] = raw.map((w, i) => ({
   n: i + 1,
   dates: w[0],
-  title: w[1],
-  phase: w[2],
-  tasks: [...w[3]],
-  deliverables: [...w[4]],
-  question: w[5],
+  title: employmentCoursePlan[i][0],
+  phase: employmentCoursePlan[i][1],
+  tasks: [...employmentCoursePlan[i][2]],
+  deliverables: [...employmentCoursePlan[i][3]],
+  question: employmentCoursePlan[i][4],
 }));
 const nav: [[View, string, any], ...any[]] = [
   ["dashboard", "대시보드", BarChart3],
@@ -346,6 +590,7 @@ const viewTitles: Partial<Record<View, string>> = {
   study: "20주 학습",
   project: "HW 프로젝트",
   circuitStarter: "회로 프로젝트 입문",
+  courses: "회로 강의 관리",
   applications: "지원 관리",
   skills: "역량 관리",
   interview: "면접 질문",
@@ -358,6 +603,7 @@ const navGroup: Partial<Record<View, View>> = {
   study: "learningHub",
   project: "learningHub",
   circuitStarter: "learningHub",
+  courses: "learningHub",
   skills: "learningHub",
   review: "learningHub",
   applications: "recruitHub",
@@ -476,6 +722,12 @@ export default function App() {
             go={go}
             items={[
               [
+                "courses",
+                "회로 강의 관리",
+                "인프런 76강·실습·Evidence·자동차 전장 적용 관리",
+                BookOpen,
+              ],
+              [
                 "planner",
                 "주간 일정",
                 "출퇴근·헬스 일정을 반영한 일주일 학습 계획",
@@ -550,6 +802,15 @@ export default function App() {
         {view === "circuitStarter" && (
           <CircuitStarter
             onSendToJournal={(text, date) => {
+              setJournal(text);
+              localStorage.setItem("ahw-journal-date", date);
+              go("journal");
+            }}
+          />
+        )}{" "}
+        {view === "courses" && (
+          <CourseManager
+            onQuickNote={(text, date) => {
               setJournal(text);
               localStorage.setItem("ahw-journal-date", date);
               go("journal");
@@ -813,6 +1074,63 @@ function DailyAgenda({ go }: { go: (v: View) => void }) {
     </section>
   );
 }
+function CourseSnapshot({ go }: { go: (v: View) => void }) {
+  const lectures = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("ahw-course-lectures") || "[]");
+    } catch {
+      return [];
+    }
+  })();
+  const completed = lectures.filter((x: any) => x.status === "완료").length;
+  const current = lectures.find((x: any) => x.status !== "완료") || {
+    number: 1,
+    title: "Orientation · HW 경험이 필요한 이유",
+    section: "Orientation",
+    steps: {},
+  };
+  const video = Math.round((completed / 76) * 100);
+  const mastery = lectures.length
+    ? Math.round(
+        (lectures.reduce(
+          (sum: number, x: any) =>
+            sum + Object.values(x.steps || {}).filter(Boolean).length,
+          0,
+        ) /
+          (76 * 5)) *
+          100,
+      )
+    : 0;
+  return (
+    <section className="course-snapshot">
+      <div>
+        <small>CURRENT LEARNING · TRAINING PROJECT</small>
+        <h2>PCB HW설계 실무</h2>
+        <p>STM32 Mixed-Signal Board · 인프런 76강</p>
+      </div>
+      <div className="course-snapshot-stats">
+        <span>
+          <b>{completed}/76</b>Lectures
+        </span>
+        <span>
+          <b>{video}%</b>Video
+        </span>
+        <span>
+          <b>{mastery}%</b>Mastery
+        </span>
+      </div>
+      <div className="today-hw-study">
+        <small>TODAY'S HW STUDY</small>
+        <b>
+          Lecture {current.number} · {current.title}
+        </b>
+        <span>{current.section}</span>
+        <p>오늘의 질문: 왜 이 회로와 부품이 필요한지 설명할 수 있는가?</p>
+      </div>
+      <button onClick={() => go("courses")}>강의 학습 열기 →</button>
+    </section>
+  );
+}
 function Dashboard({
   current,
   done,
@@ -900,6 +1218,7 @@ function Dashboard({
           핵심 목표 3개만 준비하고, 20주 과정은 2027년 1월 10일까지 진행합니다.
         </p>
       </section>
+      <CourseSnapshot go={go} />
       <DailyAgenda go={go} />
       <section className="dash">
         <article className="panel">
@@ -2076,7 +2395,15 @@ function Review({ completed, total }: { completed: number; total: number }) {
   const [text, setText] = useState(
     () => localStorage.getItem("ahw-review") || "",
   );
+  const [courseReview, setCourseReview] = useState<Record<string, string>>(() =>
+    JSON.parse(localStorage.getItem("ahw-course-review") || "{}"),
+  );
   useEffect(() => localStorage.setItem("ahw-review", text), [text]);
+  useEffect(
+    () =>
+      localStorage.setItem("ahw-course-review", JSON.stringify(courseReview)),
+    [courseReview],
+  );
   return (
     <Page
       title="Weekly Review"
@@ -2117,6 +2444,35 @@ function Review({ completed, total }: { completed: number; total: number }) {
             "잘한 점\n못한 점과 이유\n다음 주 개선사항\n다음 주 가장 중요한 목표 3개"
           }
         />
+        <small>자동 저장됨</small>
+      </article>
+      <article className="panel course-review">
+        <small>COURSE WEEKLY REVIEW</small>
+        <h2>강의가 실제 역량으로 바뀌었는지 확인</h2>
+        <div>
+          {[
+            ["lectures", "완료한 강의 수"],
+            ["time", "강의 관련 학습시간"],
+            ["practice", "완료한 Practice"],
+            ["deliverable", "Weekly Deliverable"],
+            ["learned", "배운 것"],
+            ["unknown", "이해하지 못한 것"],
+            ["explain", "내가 설명할 수 있는가?"],
+            ["automotive", "자동차 전장 연결"],
+            ["internship", "인턴 경험 연결(기밀 제외)"],
+            ["next", "다음 주 Course 목표"],
+          ].map(([key, label]) => (
+            <label key={key}>
+              {label}
+              <textarea
+                value={courseReview[key] || ""}
+                onChange={(e) =>
+                  setCourseReview({ ...courseReview, [key]: e.target.value })
+                }
+              />
+            </label>
+          ))}
+        </div>
         <small>자동 저장됨</small>
       </article>
     </Page>
