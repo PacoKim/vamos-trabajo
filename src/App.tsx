@@ -1861,10 +1861,15 @@ function Journal({
     () => localStorage.getItem("ahw-journal-date") || today(),
   );
   const [result, setResult] = useState<any>(null);
+  const activityTypes = ["인턴", "창업", "캡스톤디자인", "공모전", "개인 프로젝트", "팀 프로젝트", "연구", "동아리", "봉사·멘토링", "아르바이트", "교육·강의", "기타"];
+  const [activity, setActivity] = useState(() =>
+    JSON.parse(localStorage.getItem("ahw-journal-activity") || '{"category":"인턴","title":"","organization":"","role":""}'),
+  );
   const [gptAnswer, setGptAnswer] = useState("");
   const [revision, setRevision] = useState(0);
   const [saved, setSaved] = useState(false);
   useEffect(() => localStorage.setItem("ahw-journal-date", date), [date]);
+  useEffect(() => localStorage.setItem("ahw-journal-activity", JSON.stringify(activity)), [activity]);
   const formatDate = (v: string) => {
     const [y, m, d] = v.split("-");
     return `${y}. ${Number(m)}. ${Number(d)}.`;
@@ -1874,16 +1879,16 @@ function Journal({
     setSaved(false);
     const short = value.trim().slice(0, 110);
     setResult({
-      summary: `업무 기록: ${short}${value.length > 110 ? "…" : ""}`,
-      situation: "한국알프스 R&D 회로설계기술팀 인턴 업무 중 관찰·시험한 상황",
-      action: "기록에 나타난 비교, 확인, 측정 또는 관계자 논의 활동",
+      summary: `${activity.category} 경험: ${short}${value.length > 110 ? "…" : ""}`,
+      situation: `${activity.organization || "활동 기관·팀"}에서 ${activity.title || activity.category} 활동을 수행한 상황`,
+      action: `본인의 역할(${activity.role || "역할 확인 필요"})에서 기록에 나타난 판단·실행·협업 활동`,
       lesson:
         "확인된 사실과 추정 원인을 구분하고 Reliability·Performance·Cost를 함께 검토해야 함",
       missing:
         "측정 조건, 본인이 직접 수행한 범위, 비교 결과와 후속 결정의 근거",
     });
   };
-  const gptPrompt = `다음은 ${formatDate(date)}에 직접 수행한 경험 기록이야. 자동차 전장 HW R&D 직무(1순위 현대자동차·2순위 기아·3순위 현대모비스) 자소서에 활용하려고 해.\n\n[원문 기록]\n${value}\n\n다음 기준으로 분석해줘.\n1. 사실을 과장하거나 없던 행동을 만들지 말 것\n2. 상황(S)·과제(T)·행동(A)·결과(R)로 구분할 것\n3. 내가 직접 한 행동, 사용한 장비·기술, 판단 근거를 찾아줄 것\n4. 부족한 수치나 확인해야 할 사실은 질문으로 남길 것\n5. 자소서에서 유리한 역량과 적합한 문항을 추천할 것\n6. 700자 자소서 초안을 작성할 것`;
+  const gptPrompt = `다음은 ${formatDate(date)}에 직접 수행한 경험 기록이야.\n활동 유형: ${activity.category}\n활동명: ${activity.title || "미입력"}\n기관·팀: ${activity.organization || "미입력"}\n내 역할: ${activity.role || "미입력"}\n자동차 전장 HW R&D 직무(1순위 현대자동차·2순위 현대모비스·3순위 기아) 자소서에 활용하려고 해.\n\n[원문 기록]\n${value}\n\n다음 기준으로 분석해줘.\n1. 사실을 과장하거나 없던 행동을 만들지 말 것\n2. 상황(S)·과제(T)·행동(A)·결과(R)로 구분할 것\n3. 내가 직접 한 행동, 사용한 장비·기술, 판단 근거를 찾아줄 것\n4. 부족한 수치나 확인해야 할 사실은 질문으로 남길 것\n5. 자소서에서 유리한 역량과 적합한 문항을 추천할 것\n6. 700자 자소서 초안을 작성할 것`;
   const copyPrompt = async () => {
     if (!value.trim()) return;
     await navigator.clipboard.writeText(gptPrompt);
@@ -1899,7 +1904,10 @@ function Journal({
         {
           id: Date.now(),
           date,
-          title: `${formatDate(date)} 업무 경험`,
+          category: activity.category,
+          title: activity.title || `${formatDate(date)} ${activity.category} 경험`,
+          organization: activity.organization,
+          role: activity.role,
           source: value,
           gptPrompt,
           gptAnswer,
@@ -1919,10 +1927,15 @@ function Journal({
       sub="날짜별 원문부터 GPT 분석, 자소서 활용 자료와 저장된 경험까지 한곳에서 관리합니다."
     >
       <article className="security">
-        회사 기밀정보, 실제 제품명·고객사·비공개 회로도·부품번호·내부 측정
-        데이터는 기록하지 마세요.
+        인턴·창업·공모전 기록에는 회사 또는 팀의 기밀정보, 실제 제품명·고객사·비공개 자료를 적지 마세요.
       </article>
       <article className="panel journal">
+        <div className="activity-meta">
+          <label>활동 유형<select value={activity.category} onChange={(e) => setActivity({ ...activity, category: e.target.value })}>{activityTypes.map((type) => <option key={type}>{type}</option>)}</select></label>
+          <label>활동명<input value={activity.title} onChange={(e) => setActivity({ ...activity, title: e.target.value })} placeholder="예: 스마트 모빌리티 캡스톤디자인" /></label>
+          <label>기관·팀<input value={activity.organization} onChange={(e) => setActivity({ ...activity, organization: e.target.value })} placeholder="회사·학교·팀 이름" /></label>
+          <label>내 역할<input value={activity.role} onChange={(e) => setActivity({ ...activity, role: e.target.value })} placeholder="예: 회로 설계·팀장·기획" /></label>
+        </div>
         <div className="journal-date">
           <label htmlFor="journal-date">기록 날짜</label>
           <input
@@ -1938,10 +1951,10 @@ function Journal({
         </div>
         <div className="prompts">
           {[
-            "그날 한 업무",
-            "문제와 확인 방법",
-            "사용 장비",
-            "선배에게 배운 것",
+            "내가 맡은 역할",
+            "문제와 목표",
+            "직접 한 행동",
+            "협업·판단 근거",
             "결과와 다음 행동",
           ].map((x) => (
             <span key={x}>{x}</span>
@@ -1954,7 +1967,7 @@ function Journal({
             setResult(null);
           }}
           placeholder={
-            "선택한 날짜에 어떤 일을 했나요?\n문제가 있었다면 무엇이었고 어떻게 확인했나요?\n선배나 설계자에게 무엇을 배웠나요?"
+            "선택한 활동에서 내가 맡은 역할은 무엇이었나요?\n어떤 문제나 목표가 있었고 직접 무엇을 했나요?\n수치로 확인할 수 있는 결과와 배운 점은 무엇인가요?"
           }
         />
         <div className="journal-flow">
@@ -2332,6 +2345,11 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
   const [open, setOpen] = useState<number | string>("");
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>(null);
+  const [categoryFilter, setCategoryFilter] = useState("전체");
+  const experienceCategories = ["전체", "인턴", "창업", "캡스톤디자인", "공모전", "개인 프로젝트", "팀 프로젝트", "연구", "동아리", "봉사·멘토링", "아르바이트", "교육·강의", "기타"];
+  const visibleItems = categoryFilter === "전체"
+    ? items
+    : items.filter((item) => (item.category || "인턴") === categoryFilter);
   const startEdit = (x: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setOpen(x.id);
@@ -2364,8 +2382,15 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
           <p>카드를 눌러 자소서 활용법과 STAR 작성 구조를 확인하세요.</p>
         </div>
       )}
+      <div className="experience-filter">
+        <b>활동 유형</b>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          {experienceCategories.map((category) => <option key={category}>{category}</option>)}
+        </select>
+        <span>{visibleItems.length}개 경험</span>
+      </div>
       <div className="experience-list">
-        {!items.length && (
+        {!visibleItems.length && (
           <div className="experience-empty">
             <Sparkles />
             <b>아직 직접 저장한 경험이 없습니다.</b>
@@ -2375,7 +2400,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
             </span>
           </div>
         )}
-        {items.map((x: any) => (
+        {visibleItems.map((x: any) => (
           <article
             className={
               open === x.id
@@ -2387,7 +2412,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
           >
             <div className="experience-summary">
               <div>
-                <small>{x.category || "업무 기록에서 저장한 경험"}</small>
+                <small>{x.category || "인턴"}{x.organization ? ` · ${x.organization}` : ""}{x.role ? ` · ${x.role}` : ""}</small>
                 <h2>{x.title}</h2>
                 <p>{x.summary}</p>
               </div>
@@ -2417,6 +2442,12 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                     </div>
                     <div className="edit-grid">
                       <label>
+                        활동 유형
+                        <select value={draft.category || "인턴"} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
+                          {experienceCategories.filter((category) => category !== "전체").map((category) => <option key={category}>{category}</option>)}
+                        </select>
+                      </label>
+                      <label>
                         기록 날짜
                         <input
                           type="date"
@@ -2425,6 +2456,14 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                             setDraft({ ...draft, date: e.target.value })
                           }
                         />
+                      </label>
+                      <label>
+                        기관·팀
+                        <input value={draft.organization || ""} onChange={(e) => setDraft({ ...draft, organization: e.target.value })} />
+                      </label>
+                      <label>
+                        내 역할
+                        <input value={draft.role || ""} onChange={(e) => setDraft({ ...draft, role: e.target.value })} />
                       </label>
                       <label>
                         경험 제목

@@ -598,6 +598,34 @@
   line-height: 1.7;
   color: #607068;
 }
+.activity-meta {
+  display: grid;
+  grid-template-columns: .8fr 1.4fr 1.2fr 1.2fr;
+  gap: 9px;
+  margin-bottom: 13px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #e2e8e3;
+}
+.activity-meta label { display: grid; gap: 5px; color: #52665b; font-size: 9px; font-weight: 700; }
+.activity-meta input, .activity-meta select, .experience-filter select, .experience-edit select {
+  min-width: 0;
+  border: 1px solid #d5ddd7;
+  background: white;
+  padding: 9px;
+  font: inherit;
+  font-size: 10px;
+}
+.experience-filter {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #dce3dd;
+  background: #f7f9f6;
+}
+.experience-filter b { color: #476053; font-size: 9px; }
+.experience-filter span { margin-left: auto; color: #78867f; font-size: 9px; }
 .journal-date {
   display: grid;
   grid-template-columns: max-content 180px 1fr;
@@ -1108,6 +1136,7 @@
   .gpt-workspace {
     grid-template-columns: 1fr;
   }
+  .activity-meta { grid-template-columns: 1fr; }
   .journal-date small {
     grid-column: 1 / -1;
   }
