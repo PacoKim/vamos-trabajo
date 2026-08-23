@@ -708,7 +708,8 @@ export default function App() {
       );
       return Math.min(20, Math.max(1, elapsed + 1));
     }),
-    [menu, setMenu] = useState(false);
+    [menu, setMenu] = useState(false),
+    [dashboardRevision, setDashboardRevision] = useState(0);
   const [done, setDone] = useState<Record<string, boolean>>(() =>
     JSON.parse(localStorage.getItem("ahw-kickboard-curriculum-done-v1") || "{}"),
   );
@@ -731,21 +732,7 @@ export default function App() {
         sum + item.tasks.filter((_, index) => done[`w${item.n}-${index}`]).length,
       0,
     ),
-    total = weeks.reduce((sum, item) => sum + item.tasks.length, 0),
-    independentProgress = (() => {
-      try {
-        const evidence = JSON.parse(
-          localStorage.getItem("ahw-kickboard-evidence-v1") || "[]",
-        );
-        return Math.min(
-          100,
-          evidence.filter((item: any) => item.project === "Independent Project")
-            .length * 10,
-        );
-      } catch {
-        return 0;
-      }
-    })();
+    total = weeks.reduce((sum, item) => sum + item.tasks.length, 0);
   const go = (v: View) => {
     setView(
       v === "careerHub" && careerHubItems.length === 1
@@ -802,7 +789,8 @@ export default function App() {
             current={current}
             done={done}
             setDone={setDone}
-            independentProgress={independentProgress}
+            dataRevision={dashboardRevision}
+            onDashboardDataChange={() => setDashboardRevision((value) => value + 1)}
             go={go}
           />
         )}{" "}
@@ -958,11 +946,13 @@ function DailyAgenda({
   current,
   done,
   setDone,
+  onDataChange,
 }: {
   go: (v: View) => void;
   current: Week;
   done: Record<string, boolean>;
   setDone: (value: Record<string, boolean>) => void;
+  onDataChange: () => void;
 }) {
   const schedules = optimizedDailySchedule;
   const now = new Date();
@@ -1031,6 +1021,7 @@ function DailyAgenda({
     () => {
       localStorage.setItem("ahw-daily-items-cleared-v1", "done");
       localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks));
+      onDataChange();
     },
     [allTasks],
   );
@@ -1289,15 +1280,18 @@ function Dashboard({
   current,
   done,
   setDone,
-  independentProgress,
+  dataRevision,
+  onDashboardDataChange,
   go,
 }: {
   current: Week;
   done: Record<string, boolean>;
   setDone: (value: Record<string, boolean>) => void;
-  independentProgress: number;
+  dataRevision: number;
+  onDashboardDataChange: () => void;
   go: (v: View) => void;
 }) {
+  void dataRevision;
   const wp = Math.round(
     (current.tasks.filter((_, i) => done[`w${current.n}-${i}`]).length /
       current.tasks.length) *
@@ -1306,16 +1300,58 @@ function Dashboard({
   const priorityTask =
     current.tasks.find((_, index) => !done[`w${current.n}-${index}`]) ||
     "이번 단계 핵심 과제를 모두 완료했습니다";
+  const savedDaily = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("ahw-daily-checklists") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const today = new Date();
+  const todayKey = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+  const todayTasks: any[] = savedDaily[todayKey] || [];
+  const dailyProgress = todayTasks.length
+    ? Math.round((todayTasks.filter((task) => task.done).length / todayTasks.length) * 100)
+    : 0;
+  const allDailyTasks: any[] = Object.values(savedDaily).flat() as any[];
+  const englishTasks = allDailyTasks.filter(
+    (task) => task.track === "영어" || /영어|TOEIC|OPIc/i.test(task.text || ""),
+  );
+  const englishProgress = englishTasks.length
+    ? Math.round((englishTasks.filter((task) => task.done).length / englishTasks.length) * 100)
+    : 0;
+  const lectures: any[] = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("ahw-kickboard-lectures-v1") || "[]");
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  })();
+  const completedLectures = lectures.filter(
+    (lecture) => lecture.steps?.watch || lecture.status === "완료",
+  ).length;
+  const circuitProgress = Math.round((completedLectures / (lectures.length || 159)) * 100);
   const experienceCount = (() => {
     try {
-      const experiences = JSON.parse(
-        localStorage.getItem("ahw-experiences") || "[]",
-      );
-      return Array.isArray(experiences) ? experiences.length : 0;
+      const saved = JSON.parse(localStorage.getItem("ahw-experiences") || "[]");
+      return Array.isArray(saved) ? saved.length : 0;
     } catch {
       return 0;
     }
   })();
+  const experienceProgress = Math.min(100, Math.round((experienceCount / Math.max(1, current.n)) * 100));
+  const curriculumCompleted = weeks.reduce(
+    (sum, item) => sum + item.tasks.filter((_, index) => done[`w${item.n}-${index}`]).length,
+    0,
+  );
+  const curriculumTotal = weeks.reduce((sum, item) => sum + item.tasks.length, 0);
+  const curriculumProgress = Math.round((curriculumCompleted / curriculumTotal) * 100);
+  const totalProgress = Math.round(
+    (englishProgress + circuitProgress + experienceProgress + curriculumProgress) / 4,
+  );
   return (
     <>
       <section className="hero">
@@ -1351,22 +1387,41 @@ function Dashboard({
           <span>완료하면 다음 우선순위가 자동으로 표시됩니다.</span>
         </article>
         <article>
-          <small>주간 완료율</small>
+          <small>오늘 완료율</small>
+          <strong>{dailyProgress}%</strong>
+          <div className="bar"><i style={{ width: dailyProgress + "%" }} /></div>
+        </article>
+        <article>
+          <small>이번 주 완료율</small>
           <strong>{wp}%</strong>
           <div className="bar">
             <i style={{ width: wp + "%" }} />
           </div>
         </article>
         <article>
-          <small>독립 프로젝트</small>
-          <strong>{independentProgress}%</strong>
-          <span>CAN Sensor ECU</span>
+          <small>전체 취업 준비</small>
+          <strong>{totalProgress}%</strong>
+          <div className="bar"><i style={{ width: totalProgress + "%" }} /></div>
         </article>
-        <article>
-          <small>취업에 활용할 경험 증거</small>
-          <strong>{experienceCount}개</strong>
-          <span>자소서 · 면접 STAR 재료</span>
-        </article>
+      </section>
+      <section className="preparation-progress">
+        <div className="preparation-progress-head">
+          <div><small>전체 완성률 상세</small><h2>취업 준비 영역별 진행도</h2></div>
+          <p>체크·강의 수강·경험 저장처럼 직접 완료한 내용만 반영합니다.</p>
+        </div>
+        <div className="preparation-progress-grid">
+          {[
+            ["영어", englishProgress, `${englishTasks.filter((task) => task.done).length}/${englishTasks.length || 0}회 완료`],
+            ["회로 공부", circuitProgress, `${completedLectures}/${lectures.length || 159}강 수강`],
+            ["경험 기록", experienceProgress, `${experienceCount}/${Math.max(1, current.n)}개 · 인턴·창업·캡스톤 등`],
+          ].map(([label, value, detail]) => (
+            <article key={String(label)}>
+              <span><b>{label}</b><strong>{value}%</strong></span>
+              <div className="bar"><i style={{ width: `${value}%` }} /></div>
+              <small>{detail}</small>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="restart-banner">
         <div>
@@ -1384,6 +1439,7 @@ function Dashboard({
         current={current}
         done={done}
         setDone={setDone}
+        onDataChange={onDashboardDataChange}
       />
       <section className="dash priorities-only">
         <article className="panel job-priorities">

@@ -74,6 +74,28 @@
 .metrics .priority-metric span {
   margin-top: auto;
 }
+.preparation-progress {
+  margin: 0 4vw 18px;
+  padding: 20px;
+  border: 1px solid #dce3dd;
+  background: white;
+}
+.preparation-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+.preparation-progress-head small { color: #789084; font: 700 9px Manrope; letter-spacing: .12em; }
+.preparation-progress-head h2 { margin: 4px 0 0; font-size: 18px; }
+.preparation-progress-head p { margin: 0; color: #718078; font-size: 9px; }
+.preparation-progress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.preparation-progress-grid article { padding: 14px; background: #f6f8f6; }
+.preparation-progress-grid article > span { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.preparation-progress-grid b { color: #365044; font-size: 11px; }
+.preparation-progress-grid strong { color: #52733f; font: 800 18px Manrope; }
+.preparation-progress-grid small { display: block; margin-top: 8px; color: #718078; font-size: 8px; }
 .daily-overview {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
@@ -1075,6 +1097,17 @@
   margin-top: 0;
 }
 @media (max-width: 700px) {
+  .preparation-progress {
+    margin: 14px;
+    padding: 16px;
+  }
+  .preparation-progress-head {
+    display: grid;
+    gap: 6px;
+  }
+  .preparation-progress-grid {
+    grid-template-columns: 1fr;
+  }
   .interview-toolbar {
     align-items: flex-start;
   }
