@@ -655,8 +655,16 @@ const nav: [[View, string, any], ...any[]] = [
   ["recruitHub", "지원·면접", BriefcaseBusiness],
   ["settings", "설정·백업", Settings],
 ];
+const careerHubItems: [View, string, string, any][] = [
+  [
+    "career",
+    "취업 준비 전략",
+    "영어·인적성·자소서·포트폴리오 준비 기준",
+    Target,
+  ],
+];
 const viewTitles: Partial<Record<View, string>> = {
-  career: "취업 전략",
+  career: "취업 준비",
   planner: "주간 일정",
   study: "20주 학습",
   project: "HW 프로젝트",
@@ -739,7 +747,11 @@ export default function App() {
       }
     })();
   const go = (v: View) => {
-    setView(v);
+    setView(
+      v === "careerHub" && careerHubItems.length === 1
+        ? careerHubItems[0][0]
+        : v,
+    );
     setMenu(false);
   };
   return (
@@ -767,9 +779,9 @@ export default function App() {
           ))}
         </nav>
         <footer>
-          <small>현재 인턴</small>
-          <b>한국알프스</b>
-          <span>종료일 2026.12.31</span>
+          <small>최종 목표</small>
+          <b>자동차 전장 HW R&amp;D 취업</b>
+          <span>취업할 때까지 준비 계속</span>
         </footer>
       </aside>
       <main className="content">
@@ -794,19 +806,12 @@ export default function App() {
             go={go}
           />
         )}{" "}
-        {view === "careerHub" && (
+        {view === "careerHub" && careerHubItems.length > 1 && (
           <NavigationHub
             title="취업 준비"
             sub="목표 직무 전략과 준비 우선순위를 한곳에서 확인합니다."
             go={go}
-            items={[
-              [
-                "career",
-                "취업 준비 전략",
-                "영어·인적성·자소서·포트폴리오 준비 기준",
-                Target,
-              ],
-            ]}
+            items={careerHubItems}
           />
         )}{" "}
         {view === "learningHub" && (
