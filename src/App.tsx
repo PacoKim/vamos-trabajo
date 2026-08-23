@@ -1978,6 +1978,7 @@ function Journal({
           gptAnswer,
           screeningVersion: 1,
           usable: !noMaterial,
+          usefulness: noMaterial ? "없음" : "보통",
           summary: noMaterial
             ? "이 날은 자소서에 활용할 만한 소재가 없습니다."
             : materialLine || "GPT가 선별한 자소서 활용 후보가 있습니다.",
@@ -2383,10 +2384,34 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
   const [editing, setEditing] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>(null);
   const [categoryFilter, setCategoryFilter] = useState("전체");
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("활용도순");
+  const [visibleLimit, setVisibleLimit] = useState(12);
   const experienceCategories = ["전체", "인턴", "창업", "캡스톤디자인", "공모전", "개인 프로젝트", "팀 프로젝트", "연구", "동아리", "봉사·멘토링", "아르바이트", "교육·강의", "기타"];
-  const visibleItems = categoryFilter === "전체"
-    ? items
-    : items.filter((item) => (item.category || "인턴") === categoryFilter);
+  const usefulnessLevels = ["높음", "보통", "보류", "없음"];
+  const getUsefulness = (item: any) =>
+    item.usefulness ||
+    (item.usable === false ? "없음" : item.usable === true || item.gptAnswer ? "보통" : "보류");
+  const usefulnessScore: Record<string, number> = { 높음: 3, 보통: 2, 보류: 1, 없음: 0 };
+  const visibleItems = items
+    .filter((item) => categoryFilter === "전체" || (item.category || "인턴") === categoryFilter)
+    .filter((item) => {
+      const keyword = search.trim().toLowerCase();
+      if (!keyword) return true;
+      return [item.date, item.category, item.title, item.organization, item.role, item.summary, item.source, item.gptAnswer]
+        .some((value) => String(value || "").toLowerCase().includes(keyword));
+    })
+    .sort((a, b) => sortOrder === "최신순"
+      ? String(b.date || b.id).localeCompare(String(a.date || a.id))
+      : usefulnessScore[getUsefulness(b)] - usefulnessScore[getUsefulness(a)] ||
+        String(b.date || b.id).localeCompare(String(a.date || a.id)));
+  const shownItems = visibleItems.slice(0, visibleLimit);
+  const updateUsefulness = (item: any, usefulness: string, event: React.ChangeEvent<HTMLSelectElement>) => {
+    event.stopPropagation();
+    const updated = items.map((current) => current.id === item.id ? { ...current, usefulness } : current);
+    setItems(updated);
+    localStorage.setItem("ahw-experiences", JSON.stringify(updated));
+  };
   const startEdit = (x: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setOpen(x.id);
@@ -2420,11 +2445,20 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
         </div>
       )}
       <div className="experience-filter">
-        <b>활동 유형</b>
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setVisibleLimit(12); }}
+          placeholder="날짜·활동·기관·키워드 검색"
+          aria-label="저장 기록 검색"
+        />
+        <select aria-label="활동 유형 필터" value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setVisibleLimit(12); }}>
           {experienceCategories.map((category) => <option key={category}>{category}</option>)}
         </select>
-        <span>{visibleItems.length}개 경험</span>
+        <select aria-label="기록 정렬" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <option>활용도순</option>
+          <option>최신순</option>
+        </select>
+        <span>{shownItems.length}/{visibleItems.length}개 표시</span>
       </div>
       <div className="experience-list">
         {!visibleItems.length && (
@@ -2437,7 +2471,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
             </span>
           </div>
         )}
-        {visibleItems.map((x: any) => (
+        {shownItems.map((x: any) => (
           <article
             className={
               open === x.id
@@ -2449,7 +2483,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
           >
             <div className="experience-summary">
               <div>
-                <small>{x.category || "인턴"}{x.organization ? ` · ${x.organization}` : ""}{x.role ? ` · ${x.role}` : ""}</small>
+                <small>{x.date ? `${x.date} · ` : ""}{x.category || "인턴"}{x.organization ? ` · ${x.organization}` : ""}{x.role ? ` · ${x.role}` : ""}</small>
                 <h2>{x.title}</h2>
                 {x.screeningVersion && (
                   <em className={x.usable ? "material-status usable" : "material-status empty"}>
@@ -2459,6 +2493,16 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                 <p>{x.summary}</p>
               </div>
               <div className="experience-actions">
+                <label onClick={(event) => event.stopPropagation()}>
+                  <small>활용도</small>
+                  <select
+                    aria-label={`${x.title} 자소서 활용도`}
+                    value={getUsefulness(x)}
+                    onChange={(event) => updateUsefulness(x, event.target.value, event)}
+                  >
+                    {usefulnessLevels.map((level) => <option key={level}>{level}</option>)}
+                  </select>
+                </label>
                 {x.source && (
                   <button type="button" onClick={(e) => startEdit(x, e)}>
                     수정
@@ -2498,6 +2542,12 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                             setDraft({ ...draft, date: e.target.value })
                           }
                         />
+                      </label>
+                      <label>
+                        자소서 활용도
+                        <select value={draft.usefulness || getUsefulness(draft)} onChange={(e) => setDraft({ ...draft, usefulness: e.target.value })}>
+                          {usefulnessLevels.map((level) => <option key={level}>{level}</option>)}
+                        </select>
                       </label>
                       <label>
                         기관·팀
@@ -2633,6 +2683,11 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
           </article>
         ))}
       </div>
+      {shownItems.length < visibleItems.length && (
+        <button className="experience-more" onClick={() => setVisibleLimit((value) => value + 12)}>
+          다음 기록 12개 더 보기
+        </button>
+      )}
     </>
   );
 }
