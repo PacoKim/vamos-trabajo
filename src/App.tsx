@@ -718,13 +718,20 @@ export default function App() {
     )?.n || 20;
   useEffect(() => setWeek(recommendedWeek), [recommendedWeek]);
   const current = weeks[week - 1],
-    completed = weeks.reduce(
-      (sum, item) =>
-        sum + item.tasks.filter((_, index) => done[`w${item.n}-${index}`]).length,
-      0,
-    ),
-    total = weeks.reduce((a, w) => a + w.tasks.length, 0),
-    progress = Math.round((completed / total) * 100);
+    independentProgress = (() => {
+      try {
+        const evidence = JSON.parse(
+          localStorage.getItem("ahw-kickboard-evidence-v1") || "[]",
+        );
+        return Math.min(
+          100,
+          evidence.filter((item: any) => item.project === "Independent Project")
+            .length * 10,
+        );
+      } catch {
+        return 0;
+      }
+    })();
   const go = (v: View) => {
     setView(v);
     setMenu(false);
@@ -777,7 +784,7 @@ export default function App() {
             current={current}
             done={done}
             setDone={setDone}
-            progress={progress}
+            independentProgress={independentProgress}
             go={go}
           />
         )}{" "}
@@ -1271,13 +1278,13 @@ function Dashboard({
   current,
   done,
   setDone,
-  progress,
+  independentProgress,
   go,
 }: {
   current: Week;
   done: Record<string, boolean>;
   setDone: (value: Record<string, boolean>) => void;
-  progress: number;
+  independentProgress: number;
   go: (v: View) => void;
 }) {
   const wp = Math.round(
@@ -1337,7 +1344,7 @@ function Dashboard({
         </article>
         <article>
           <small>독립 프로젝트</small>
-          <strong>{progress}%</strong>
+          <strong>{independentProgress}%</strong>
           <span>CAN Sensor ECU</span>
         </article>
         <article>
