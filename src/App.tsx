@@ -718,6 +718,12 @@ export default function App() {
     )?.n || 20;
   useEffect(() => setWeek(recommendedWeek), [recommendedWeek]);
   const current = weeks[week - 1],
+    completed = weeks.reduce(
+      (sum, item) =>
+        sum + item.tasks.filter((_, index) => done[`w${item.n}-${index}`]).length,
+      0,
+    ),
+    total = weeks.reduce((sum, item) => sum + item.tasks.length, 0),
     independentProgress = (() => {
       try {
         const evidence = JSON.parse(
@@ -1292,12 +1298,19 @@ function Dashboard({
       current.tasks.length) *
       100,
   );
-  const internshipD = Math.max(
-    0,
-    Math.ceil(
-      (new Date("2026-12-31T23:59:59+09:00").getTime() - Date.now()) / 86400000,
-    ),
-  );
+  const priorityTask =
+    current.tasks.find((_, index) => !done[`w${current.n}-${index}`]) ||
+    "이번 단계 핵심 과제를 모두 완료했습니다";
+  const experienceCount = (() => {
+    try {
+      const experiences = JSON.parse(
+        localStorage.getItem("ahw-experiences") || "[]",
+      );
+      return Array.isArray(experiences) ? experiences.length : 0;
+    } catch {
+      return 0;
+    }
+  })();
   return (
     <>
       <section className="hero">
@@ -1327,13 +1340,10 @@ function Dashboard({
         </aside>
       </section>
       <section className="metrics">
-        <article>
-          <small>현재 교육과정</small>
-          <strong>
-            {current.n}주차 <i>/ 20</i>
-          </strong>
-          <span>{current.title}</span>
-          <span>{current.dates}</span>
+        <article className="priority-metric">
+          <small>지금 가장 먼저 할 일</small>
+          <strong>{priorityTask}</strong>
+          <span>완료하면 다음 우선순위가 자동으로 표시됩니다.</span>
         </article>
         <article>
           <small>주간 완료율</small>
@@ -1348,9 +1358,9 @@ function Dashboard({
           <span>CAN Sensor ECU</span>
         </article>
         <article>
-          <small>인턴 종료일까지</small>
-          <strong>D-{internshipD}</strong>
-          <span>한국알프스 R&D</span>
+          <small>취업에 활용할 경험 증거</small>
+          <strong>{experienceCount}개</strong>
+          <span>자소서 · 면접 STAR 재료</span>
         </article>
       </section>
       <section className="restart-banner">

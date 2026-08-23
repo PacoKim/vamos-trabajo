@@ -67,6 +67,13 @@
   margin-top: -16px;
   margin-bottom: 18px;
 }
+.metrics .priority-metric strong {
+  font: 750 14px/1.45 Pretendard, sans-serif;
+  word-break: keep-all;
+}
+.metrics .priority-metric span {
+  margin-top: auto;
+}
 .daily-overview {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
