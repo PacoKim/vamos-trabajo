@@ -464,6 +464,10 @@
 .analysis > button svg {
   width: 13px;
 }
+.journal .actions button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
 .experience-actions {
   display: flex;
   align-items: center;
@@ -774,6 +778,41 @@
 .gpt-answer {
   border-left: 3px solid #83a950;
   background: #eef4e9;
+}
+.material-status {
+  display: inline-flex;
+  width: max-content;
+  margin-top: 7px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 700;
+}
+.material-status.usable { background: #e5f0dd; color: #47653a; }
+.material-status.empty { background: #edf0ee; color: #77827c; }
+.screening-result {
+  padding: 16px;
+  border-left: 3px solid #83a950;
+  background: #eef4e9;
+}
+.screening-result > div { display: grid; gap: 4px; }
+.screening-result small { color: #6f8375; font-size: 8px; }
+.screening-result b { color: #365044; font-size: 12px; }
+.screening-result p {
+  margin: 13px 0;
+  color: #52645a;
+  font-size: 11px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+.screening-result button {
+  border: 1px solid #78907f;
+  background: white;
+  color: #355c48;
+  padding: 7px 10px;
+  font-size: 9px;
+  cursor: pointer;
 }
 .experience-actions {
   display: flex;

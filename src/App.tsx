@@ -1938,7 +1938,6 @@ function Journal({
   const [date, setDate] = useState(
     () => localStorage.getItem("ahw-journal-date") || today(),
   );
-  const [result, setResult] = useState<any>(null);
   const activityTypes = ["인턴", "창업", "캡스톤디자인", "공모전", "개인 프로젝트", "팀 프로젝트", "연구", "동아리", "봉사·멘토링", "아르바이트", "교육·강의", "기타"];
   const [activity, setActivity] = useState(() =>
     JSON.parse(localStorage.getItem("ahw-journal-activity") || '{"category":"인턴","title":"","organization":"","role":""}'),
@@ -1952,28 +1951,16 @@ function Journal({
     const [y, m, d] = v.split("-");
     return `${y}. ${Number(m)}. ${Number(d)}.`;
   };
-  const analyze = () => {
-    if (!value.trim()) return;
-    setSaved(false);
-    const short = value.trim().slice(0, 110);
-    setResult({
-      summary: `${activity.category} 경험: ${short}${value.length > 110 ? "…" : ""}`,
-      situation: `${activity.organization || "활동 기관·팀"}에서 ${activity.title || activity.category} 활동을 수행한 상황`,
-      action: `본인의 역할(${activity.role || "역할 확인 필요"})에서 기록에 나타난 판단·실행·협업 활동`,
-      lesson:
-        "확인된 사실과 추정 원인을 구분하고 Reliability·Performance·Cost를 함께 검토해야 함",
-      missing:
-        "측정 조건, 본인이 직접 수행한 범위, 비교 결과와 후속 결정의 근거",
-    });
-  };
-  const gptPrompt = `다음은 ${formatDate(date)}에 직접 수행한 경험 기록이야.\n활동 유형: ${activity.category}\n활동명: ${activity.title || "미입력"}\n기관·팀: ${activity.organization || "미입력"}\n내 역할: ${activity.role || "미입력"}\n자동차 전장 HW R&D 직무(1순위 현대자동차·2순위 현대모비스·3순위 기아) 자소서에 활용하려고 해.\n\n[원문 기록]\n${value}\n\n다음 기준으로 분석해줘.\n1. 사실을 과장하거나 없던 행동을 만들지 말 것\n2. 상황(S)·과제(T)·행동(A)·결과(R)로 구분할 것\n3. 내가 직접 한 행동, 사용한 장비·기술, 판단 근거를 찾아줄 것\n4. 부족한 수치나 확인해야 할 사실은 질문으로 남길 것\n5. 자소서에서 유리한 역량과 적합한 문항을 추천할 것\n6. 700자 자소서 초안을 작성할 것`;
+  const gptPrompt = `아래 내용은 자소서 초안이 아니라 ${formatDate(date)}에 작성한 개인 일기야. 여러 날짜의 기록을 충분히 모은 뒤, 나중에 서로 합쳐 자소서를 작성할 계획이야. 지금은 이 하루의 기록에서 실제로 자소서에 보탤 만한 사실이 있는지만 엄격하게 선별해줘.\n\n[활동 정보]\n- 활동 유형: ${activity.category}\n- 활동명: ${activity.title || "미입력"}\n- 기관·팀: ${activity.organization || "미입력"}\n- 내 역할: ${activity.role || "미입력"}\n- 목표 직무: 자동차 전장 HW R&D\n- 목표 기업: 1순위 현대자동차, 2순위 현대모비스, 3순위 기아\n\n[이날의 일기 원문]\n${value}\n\n[판단 원칙]\n1. 모든 날짜에서 억지로 자소서 소재를 만들지 마. 직무 역량, 문제 해결, 협업, 책임감, 도전, 개선, 수치로 확인되는 결과 중 실제 근거가 있을 때만 뽑아줘.\n2. 기록에 없는 행동·성과·수치·의도는 절대 추측하거나 만들어내지 마.\n3. 완성된 STAR나 자소서 문장을 쓰지 마. 나중에 여러 날짜의 기록과 합칠 수 있는 짧은 후보 메모만 만들어줘.\n4. 일상적인 내용뿐이거나 근거가 부족하면 솔직하게 “이 날은 자소서에 활용할 만한 소재가 없습니다.”라고 답해줘.\n5. 답변은 홈페이지에 그대로 붙여넣을 것이므로 아래 형식과 제목을 유지하고 짧고 읽기 쉽게 작성해줘.\n\n[출력 형식]\n[판정]\n활용 후보 있음 / 없음 중 하나\n\n판정이 ‘없음’이면 아래 한 줄만 추가:\n[짧은 이유]\n이 날은 자소서에 활용할 만한 소재가 없습니다. — 이유를 한 문장으로 작성\n\n판정이 ‘활용 후보 있음’이면 아래만 작성:\n[소재 한 줄]\n핵심 사실을 1문장으로 요약\n\n[쓸 수 있는 근거]\n- 원문에서 확인되는 행동·결과를 최대 3개\n\n[보이는 역량]\n- 역량 키워드 최대 3개\n\n[나중에 합칠 키워드]\n- 같은 문제·프로젝트·역량의 다른 날짜 기록을 찾기 위한 키워드 최대 3개\n\n[추가로 확인할 사실]\n- 수치, 본인 기여 범위 등 정말 필요한 질문만 최대 2개`;
   const copyPrompt = async () => {
     if (!value.trim()) return;
     await navigator.clipboard.writeText(gptPrompt);
     alert("GPT 질문이 복사되었습니다. ChatGPT에 붙여 넣어 질문하세요.");
   };
   const save = () => {
-    if (!result) return;
+    if (!value.trim() || !gptAnswer.trim()) return;
+    const noMaterial = /\[판정\]\s*없음|활용할 만한 소재가 없습니다/.test(gptAnswer);
+    const materialLine = gptAnswer.match(/\[소재 한 줄\]\s*\n?([^\n]+)/)?.[1]?.trim();
     const old = JSON.parse(localStorage.getItem("ahw-experiences") || "[]");
     localStorage.setItem(
       "ahw-experiences",
@@ -1989,20 +1976,23 @@ function Journal({
           source: value,
           gptPrompt,
           gptAnswer,
-          ...result,
+          screeningVersion: 1,
+          usable: !noMaterial,
+          summary: noMaterial
+            ? "이 날은 자소서에 활용할 만한 소재가 없습니다."
+            : materialLine || "GPT가 선별한 자소서 활용 후보가 있습니다.",
         },
       ]),
     );
     setRevision((v) => v + 1);
     setSaved(true);
-    setResult(null);
     setGptAnswer("");
     setValue("");
   };
   return (
     <Page
       title="빠른 기록·경험 보관함"
-      sub="날짜별 원문부터 GPT 분석, 자소서 활용 자료와 저장된 경험까지 한곳에서 관리합니다."
+      sub="일기를 날짜별로 쌓고, 나중에 합칠 만한 자소서 소재가 있는 날만 짧게 선별합니다."
     >
       <article className="security">
         인턴·창업·공모전 기록에는 회사 또는 팀의 기밀정보, 실제 제품명·고객사·비공개 자료를 적지 마세요.
@@ -2029,11 +2019,11 @@ function Journal({
         </div>
         <div className="prompts">
           {[
-            "내가 맡은 역할",
-            "문제와 목표",
-            "직접 한 행동",
-            "협업·판단 근거",
-            "결과와 다음 행동",
+            "오늘 한 일",
+            "기억에 남은 문제",
+            "내가 한 판단·행동",
+            "결과와 느낀 점",
+            "나중에 기억할 사실",
           ].map((x) => (
             <span key={x}>{x}</span>
           ))}
@@ -2042,87 +2032,56 @@ function Journal({
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
-            setResult(null);
+            setSaved(false);
           }}
           placeholder={
-            "선택한 활동에서 내가 맡은 역할은 무엇이었나요?\n어떤 문제나 목표가 있었고 직접 무엇을 했나요?\n수치로 확인할 수 있는 결과와 배운 점은 무엇인가요?"
+            "오늘 있었던 일을 편하게 일기처럼 적어주세요.\n작은 문제, 내가 한 행동, 들은 피드백이나 숫자가 있다면 사실 그대로 남겨두세요.\n자소서에 쓸 내용이 없어도 괜찮습니다."
           }
         />
         <div className="journal-flow">
           <b>정리 순서</b>
           <span>
-            ① 원문 작성 → ② GPT 질문 복사 → ③ 답변 붙여넣기 → ④ 분석·저장
+            ① 일기 작성 → ② GPT 선별 질문 복사 → ③ 답변 붙여넣기 → ④ 기록 저장
           </span>
         </div>
         <section className="gpt-workspace">
           <div>
-            <small>GPT에게 물어볼 질문</small>
+            <small>GPT 자소서 소재 선별 질문</small>
             <p>
-              현재 기록을 STAR 구조, 직무 역량, 보완 질문과 700자 자소서
-              초안으로 요청합니다.
+              자소서를 바로 쓰지 않고, 이 날의 일기에서 나중에 합칠 만한
+              사실이 있는지만 짧게 판단하도록 요청합니다.
             </p>
             <button type="button" onClick={copyPrompt} disabled={!value.trim()}>
               GPT 질문 복사
             </button>
           </div>
           <label>
-            <b>GPT 답변 붙여넣기</b>
+            <b>GPT 선별 결과 붙여넣기</b>
             <textarea
               value={gptAnswer}
               onChange={(e) => setGptAnswer(e.target.value)}
-              placeholder="ChatGPT에서 받은 STAR 분석과 자소서 초안을 여기에 붙여 넣으세요. 경험과 함께 저장됩니다."
+              placeholder="GPT 답변을 제목과 줄바꿈 그대로 붙여 넣으세요.\n소재가 없는 날은 ‘이 날은 자소서에 활용할 만한 소재가 없습니다.’라는 판단도 기록으로 저장됩니다."
             />
           </label>
         </section>
         <div className="actions">
-          <small>작성 중인 내용과 날짜는 자동 저장됩니다.</small>
-          <button onClick={analyze}>
-            <Sparkles /> 취업 경험으로 분석
+          <small>일기 원문은 자동 저장됩니다. GPT 답변을 붙여 넣은 뒤 함께 보관하세요.</small>
+          <button onClick={save} disabled={!value.trim() || !gptAnswer.trim()}>
+            <Save /> 일기와 선별 결과 저장
           </button>
         </div>
       </article>
-      {result && (
-        <article className="analysis panel">
-          <small>
-            선택 날짜 · {formatDate(date)} / 실제로 하지 않은 행동은 생성하지
-            않습니다
-          </small>
-          <h2>Technical Summary</h2>
-          <p>{result.summary}</p>
-          <div className="analysis-grid">
-            <div>
-              <b>Situation</b>
-              <p>{result.situation}</p>
-            </div>
-            <div>
-              <b>Action</b>
-              <p>{result.action}</p>
-            </div>
-            <div>
-              <b>Lesson / Engineering Insight</b>
-              <p>{result.lesson}</p>
-            </div>
-            <div>
-              <b>Missing Information</b>
-              <p>{result.missing}</p>
-            </div>
-          </div>
-          <button onClick={save}>
-            <Save /> 경험 보관함에 저장
-          </button>
-        </article>
-      )}
       {saved && (
         <div className="save-notice">
-          경험이 저장되었습니다. 아래 목록에서 바로 확인할 수 있습니다.
+          일기와 GPT 선별 결과가 저장되었습니다. 아래 목록에서 확인할 수 있습니다.
         </div>
       )}
       <section className="bank-section">
         <div className="section-heading">
           <small>경험 보관함</small>
-          <h2>저장된 경험과 자소서 활용법</h2>
+          <h2>날짜별 일기와 자소서 소재 후보</h2>
           <p>
-            카드를 눌러 STAR 구조, 추천 문항과 저장한 GPT 답변을 확인하세요.
+            소재가 없는 날도 그대로 보관하고, 나중에 여러 날짜를 함께 검토하세요.
           </p>
         </div>
         <Experience key={revision} embedded />
@@ -2457,7 +2416,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
       {!embedded && (
         <div className="section-heading">
           <h1>경험 보관함</h1>
-          <p>카드를 눌러 자소서 활용법과 STAR 작성 구조를 확인하세요.</p>
+          <p>날짜별 일기와 GPT가 짧게 선별한 자소서 소재 후보를 확인하세요.</p>
         </div>
       )}
       <div className="experience-filter">
@@ -2492,6 +2451,11 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
               <div>
                 <small>{x.category || "인턴"}{x.organization ? ` · ${x.organization}` : ""}{x.role ? ` · ${x.role}` : ""}</small>
                 <h2>{x.title}</h2>
+                {x.screeningVersion && (
+                  <em className={x.usable ? "material-status usable" : "material-status empty"}>
+                    {x.usable ? "활용 후보 있음" : "이 날은 소재 없음"}
+                  </em>
+                )}
                 <p>{x.summary}</p>
               </div>
               <div className="experience-actions">
@@ -2500,7 +2464,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                     수정
                   </button>
                 )}
-                <b>{open === x.id ? "접기 −" : "활용법 보기 +"}</b>
+                <b>{open === x.id ? "접기 −" : "기록 보기 +"}</b>
               </div>
             </div>
             {open === x.id && (
@@ -2573,7 +2537,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                         />
                       </label>
                       <label className="wide">
-                        GPT 분석·자소서 초안
+                        GPT 자소서 소재 선별 결과
                         <textarea
                           value={draft.gptAnswer || ""}
                           onChange={(e) =>
@@ -2596,6 +2560,24 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                     </div>
                   </form>
                 )}
+                {x.screeningVersion ? (
+                  <div className="screening-result">
+                    <div>
+                      <small>GPT 선별 결과</small>
+                      <b>{x.usable ? "나중에 합쳐볼 소재 후보" : "이 날은 활용 소재 없음"}</b>
+                    </div>
+                    <p>{x.gptAnswer}</p>
+                    <button
+                      type="button"
+                      onClick={async (event) => {
+                        event.stopPropagation();
+                        await navigator.clipboard.writeText(x.gptAnswer || "");
+                      }}
+                    >
+                      선별 결과 복사
+                    </button>
+                  </div>
+                ) : (<>
                 <div className="advantage-box">
                   <small>자소서에서 유리한 이유</small>
                   <p>
@@ -2633,13 +2615,14 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                   <br />
                   {x.missing}
                 </div>
+                </>)}
                 {x.source && (
                   <div className="saved-material">
                     <h3>내가 기록한 원문</h3>
                     <p>{x.source}</p>
                   </div>
                 )}
-                {x.gptAnswer && (
+                {x.gptAnswer && !x.screeningVersion && (
                   <div className="saved-material gpt-answer">
                     <h3>GPT 분석·자소서 초안</h3>
                     <p>{x.gptAnswer}</p>
