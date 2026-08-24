@@ -964,56 +964,57 @@ function DailyAgenda({
   const mainSuggestions = current.tasks
     .map((text, index) => ({
       text,
-      track: `${current.n}주차 핵심`,
+      track: "회로·HW 핵심",
       curriculumId: `w${current.n}-${index}`,
-      minimum: true,
-    }))
-    .filter((task) => !done[task.curriculumId])
-    .slice(0, 2);
-  const trackSuggestions = parallelTracks(current)
-    .map(([track, text], index) => ({
-      text,
-      track,
-      curriculumId: `p${current.n}-${index}`,
       minimum: true,
     }))
     .filter((task) => !done[task.curriculumId])
     .slice(0, 1);
   const maintenanceByDay = [
-    ["회고", "완료 결과를 정리하고 다음 행동 1개 기록"],
+    ["주간 정리", "이번 주 완료 내용 확인과 다음 주 첫 할 일 정하기"],
     ["영어", "통근 영어 20분 또는 말하기 1세트"],
-    ["인적성", "인적성 10문제 또는 오답 10분"],
+    ["인적성", "인적성 10문제만 풀고 오답 1개 확인"],
+    ["경험 기록", "오늘 있었던 일을 10분 동안 일기로 기록"],
     ["영어", "통근 영어 20분 또는 말하기 1세트"],
-    ["인적성", "인적성 10문제 또는 오답 10분"],
-    ["취업 기록", "이번 주 결과물이나 면접 답변 1개 정리"],
-    ["결과물", "사진·수치·측정 결과를 취업 증거로 정리"],
+    ["취업 준비", "공고 1개 확인 또는 자소서 소재 1개 검토"],
+    ["주말 보충", "이번 주 미완료 항목 중 가장 중요한 1개만 수행"],
   ][now.getDay()];
   const minimumTasks = [
-    ...mainSuggestions,
-    ...trackSuggestions,
+    ...mainSuggestions.slice(0, 1),
     { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true },
-  ].slice(0, 4);
+  ].slice(0, 2);
   const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
-      ? minimumTasks.map((task, i) => ({
-        id: `daily-auto-${dateKey}-${"curriculumId" in task ? task.curriculumId : `maintenance-${i}`}`,
+      ? minimumTasks.map((task, index) => ({
+        id: `daily-plan-v2-${dateKey}-${index}`,
         ...task,
         done: false,
       }))
     : [];
   const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
-    if (localStorage.getItem("ahw-daily-items-cleared-v1") !== "done") {
-      return { [dateKey]: defaultTasks };
-    }
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
     );
-    const existing = (saved[dateKey] || []).filter(
-      (task: any) => !String(task.id || "").startsWith(`parallel-${dateKey}-`),
+    const initializedDays = JSON.parse(
+      localStorage.getItem("ahw-daily-plan-days-v2") || "{}",
     );
-    const additions = defaultTasks.filter((task) => !existing.some((x: any) => x.id === task.id));
-    return { ...saved, [dateKey]: [...existing, ...additions] };
+    if (initializedDays[dateKey]) return saved;
+    const previousTasks = saved[dateKey] || [];
+    const userTasks = previousTasks.filter((task: any) => {
+      const id = String(task.id || "");
+      return !id.startsWith("daily-auto-") &&
+        !id.startsWith("daily-plan-v2-") &&
+        !id.startsWith(`parallel-${dateKey}-`);
+    });
+    const stableDefaults = defaultTasks.map((task) => {
+      const previous = previousTasks.find((item: any) =>
+        ("curriculumId" in task && task.curriculumId && item.curriculumId === task.curriculumId) ||
+        item.text === task.text,
+      );
+      return previous ? { ...task, done: !!previous.done } : task;
+    });
+    return { ...saved, [dateKey]: [...stableDefaults, ...userTasks] };
   });
   const [newTask, setNewTask] = useState("");
   const tasks = allTasks[dateKey] || [];
@@ -1021,6 +1022,13 @@ function DailyAgenda({
     () => {
       localStorage.setItem("ahw-daily-items-cleared-v1", "done");
       localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks));
+      const initializedDays = JSON.parse(
+        localStorage.getItem("ahw-daily-plan-days-v2") || "{}",
+      );
+      localStorage.setItem(
+        "ahw-daily-plan-days-v2",
+        JSON.stringify({ ...initializedDays, [dateKey]: true }),
+      );
       onDataChange();
     },
     [allTasks],
