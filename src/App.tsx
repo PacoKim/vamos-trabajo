@@ -979,15 +979,35 @@ function DailyAgenda({
     ["취업 준비", "공고 1개 확인 또는 자소서 소재 1개 검토"],
     ["주말 보충", "이번 주 미완료 항목 중 가장 중요한 1개만 수행"],
   ][now.getDay()];
+  const nextKickboardLecture = (() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("ahw-kickboard-lectures-v1") || "[]",
+      );
+      return Array.isArray(saved)
+        ? saved.find((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료")
+        : null;
+    } catch {
+      return null;
+    }
+  })();
+  const kickboardTask = {
+    track: "전동킥보드 강의",
+    text: nextKickboardLecture
+      ? `${nextKickboardLecture.number}강 · ${nextKickboardLecture.title || "실제 강의 제목 확인"} 수강 후 핵심 3줄 기록`
+      : "전동킥보드 강의 1강 수강 후 핵심 3줄 기록",
+    minimum: true,
+  };
   const minimumTasks = [
     ...mainSuggestions.slice(0, 1),
+    kickboardTask,
     { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true },
-  ].slice(0, 2);
+  ].slice(0, 3);
   const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
       ? minimumTasks.map((task, index) => ({
-        id: `daily-plan-v2-${dateKey}-${index}`,
+        id: `daily-plan-v3-${dateKey}-${index}`,
         ...task,
         done: false,
       }))
@@ -997,7 +1017,7 @@ function DailyAgenda({
       localStorage.getItem("ahw-daily-checklists") || "{}",
     );
     const initializedDays = JSON.parse(
-      localStorage.getItem("ahw-daily-plan-days-v2") || "{}",
+      localStorage.getItem("ahw-daily-plan-days-v3") || "{}",
     );
     if (initializedDays[dateKey]) return saved;
     const previousTasks = saved[dateKey] || [];
@@ -1005,6 +1025,7 @@ function DailyAgenda({
       const id = String(task.id || "");
       return !id.startsWith("daily-auto-") &&
         !id.startsWith("daily-plan-v2-") &&
+        !id.startsWith("daily-plan-v3-") &&
         !id.startsWith(`parallel-${dateKey}-`);
     });
     const stableDefaults = defaultTasks.map((task) => {
@@ -1023,10 +1044,10 @@ function DailyAgenda({
       localStorage.setItem("ahw-daily-items-cleared-v1", "done");
       localStorage.setItem("ahw-daily-checklists", JSON.stringify(allTasks));
       const initializedDays = JSON.parse(
-        localStorage.getItem("ahw-daily-plan-days-v2") || "{}",
+        localStorage.getItem("ahw-daily-plan-days-v3") || "{}",
       );
       localStorage.setItem(
-        "ahw-daily-plan-days-v2",
+        "ahw-daily-plan-days-v3",
         JSON.stringify({ ...initializedDays, [dateKey]: true }),
       );
       onDataChange();
