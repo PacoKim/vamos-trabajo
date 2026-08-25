@@ -7,6 +7,7 @@ import {
   downloadCloud,
   generateSyncCode,
   getSyncCredentials,
+  hasCloudData,
   startCloudAutoSync,
   syncLocalChangesNow,
   uploadCloud,
@@ -2849,13 +2850,27 @@ function SettingsPage() {
   const savedCredentials = getSyncCredentials();
   const [syncCode, setSyncCode] = useState(savedCredentials.code);
   const [syncPin, setSyncPin] = useState(savedCredentials.pin);
-  const [syncConnected, setSyncConnected] = useState(!!savedCredentials.code);
-  const [syncStatus, setSyncStatus] = useState(savedCredentials.code ? "이 기기는 클라우드 동기화에 연결되어 있습니다." : "아직 연결되지 않았습니다.");
+  const [syncConnected, setSyncConnected] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(savedCredentials.code ? "서버 연결을 확인하고 있습니다…" : "아직 연결되지 않았습니다.");
   const [syncWorking, setSyncWorking] = useState(false);
   useEffect(() => {
     const onStatus = (event: Event) => setSyncStatus((event as CustomEvent<string>).detail);
     window.addEventListener("ahw-sync-status", onStatus);
     return () => window.removeEventListener("ahw-sync-status", onStatus);
+  }, []);
+  useEffect(() => {
+    if (!savedCredentials.code) return;
+    void hasCloudData(savedCredentials.code)
+      .then((exists) => {
+        setSyncConnected(exists);
+        setSyncStatus(exists
+          ? "서버에 저장된 동기화 데이터를 확인했습니다."
+          : "연결 코드는 남아 있지만 서버에 저장된 데이터가 없습니다. 이 기기 연결을 다시 눌러주세요.");
+      })
+      .catch((error) => {
+        setSyncConnected(false);
+        setSyncStatus(error instanceof Error ? error.message : "서버 연결 확인에 실패했습니다.");
+      });
   }, []);
   const runSync = async (work: () => Promise<unknown>, success: string) => {
     setSyncWorking(true);

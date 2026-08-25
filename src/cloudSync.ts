@@ -127,14 +127,23 @@ export const connectCloud = async (code: string, pin: string) => {
   if (normalizedCode.length < 12) throw new Error("동기화 코드는 12자 이상이어야 합니다.");
   if (pin.length < 6) throw new Error("동기화 비밀번호는 6자 이상이어야 합니다.");
   const cloud = await getCloud(normalizedCode);
-  localStorage.setItem(CODE_KEY, normalizedCode);
-  localStorage.setItem(PIN_KEY, pin);
   if (cloud) {
-    await downloadCloud(normalizedCode, pin);
+    await downloadCloud(normalizedCode, pin, false);
+    localStorage.setItem(CODE_KEY, normalizedCode);
+    localStorage.setItem(PIN_KEY, pin);
+    location.reload();
     return "클라우드 데이터를 이 기기에 연결했습니다.";
   }
   await uploadCloud(normalizedCode, pin);
+  // 서버 저장이 성공한 뒤에만 연결 자격 정보를 남긴다.
+  localStorage.setItem(CODE_KEY, normalizedCode);
+  localStorage.setItem(PIN_KEY, pin);
   return "이 기기 데이터를 클라우드에 처음 저장했습니다.";
+};
+
+export const hasCloudData = async (code: string) => {
+  if (!code.trim()) return false;
+  return (await getCloud(code)) !== null;
 };
 
 export const generateSyncCode = () => {
