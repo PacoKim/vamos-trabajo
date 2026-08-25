@@ -363,7 +363,7 @@ export default function CircuitStarter({
   const currentLab = labs.findIndex((x) => x.status !== "완료");
   const send = (lab: Lab) => {
     const d = lab.date || new Date().toISOString().slice(0, 10);
-    const text = `[회로 프로젝트 실습]\n실습명: ${lab.name}\n상태: ${lab.status}\n회로 목적: ${lab.purpose || ""}\n입력과 출력: ${lab.io || ""}\n사용 부품: ${lab.parts || ""}\n계산값: ${lab.calculation || ""}\n막힌 점: ${lab.blocked}\n해결을 위해 한 행동: ${lab.action}\n측정·검증 결과: ${lab.result}\n예상과 다른 점: ${lab.difference || ""}\n배운 점: ${lab.lesson || ""}\n다음에 확인할 점: ${lab.next || ""}`;
+    const text = `[회로 프로젝트 실습]\n실습명: ${lab.name}\n상태: ${lab.status}\n목표·계산/선정 근거: ${lab.purpose || "없음"}\n막힌 점·해결 행동: ${lab.action || lab.blocked || "없음"}\n측정·검증 결과와 배운 점: ${lab.result || "없음"}`;
     onSendToJournal(text, d);
   };
   return (
@@ -659,16 +659,6 @@ export default function CircuitStarter({
                           )}
                         </div>
                       </label>
-                      <label>
-                        메모
-                        <input
-                          value={x.memo}
-                          onChange={(e) =>
-                            updatePurchase(x.id, "memo", e.target.value)
-                          }
-                          placeholder="호환성·배송 등"
-                        />
-                      </label>
                     </div>
                   </article>
                 ))}
@@ -683,7 +673,7 @@ export default function CircuitStarter({
           <div>
             <small>PRACTICE TRACKER</small>
             <h2>10개 실습 진행 관리</h2>
-            <p>막힌 점과 측정 근거를 남겨야 자소서와 면접 자료가 됩니다.</p>
+            <p>상태를 체크하고, 목표·문제 해결·측정 결과만 짧게 남기세요.</p>
           </div>
           <strong>
             {completed * 10}%<small>실습 완료율</small>
@@ -713,118 +703,44 @@ export default function CircuitStarter({
                       <button
                         className={lab.status === s ? "active" : ""}
                         key={s}
-                        onClick={() => updateLab(lab.id, "status", s)}
+                        onClick={() => {
+                          updateLab(lab.id, "status", s);
+                          if (s === "완료" && !lab.date) updateLab(lab.id, "date", new Date().toISOString().slice(0, 10));
+                        }}
                       >
                         {s}
                       </button>
                     ))}
                   </div>
-                  {i < 3 && (
-                    <div className="lab-record-grid">
-                      <label>
-                        회로 목적
-                        <textarea
-                          value={lab.purpose}
-                          onChange={(e) =>
-                            updateLab(lab.id, "purpose", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        입력과 출력
-                        <textarea
-                          value={lab.io}
-                          onChange={(e) =>
-                            updateLab(lab.id, "io", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        사용 부품
-                        <textarea
-                          value={lab.parts}
-                          onChange={(e) =>
-                            updateLab(lab.id, "parts", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        계산값
-                        <textarea
-                          value={lab.calculation}
-                          onChange={(e) =>
-                            updateLab(lab.id, "calculation", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        예상과 다른 점
-                        <textarea
-                          value={lab.difference}
-                          onChange={(e) =>
-                            updateLab(lab.id, "difference", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        배운 점
-                        <textarea
-                          value={lab.lesson}
-                          onChange={(e) =>
-                            updateLab(lab.id, "lesson", e.target.value)
-                          }
-                        />
-                      </label>
-                      <label className="wide">
-                        다음에 확인할 점
-                        <textarea
-                          value={lab.next}
-                          onChange={(e) =>
-                            updateLab(lab.id, "next", e.target.value)
-                          }
-                        />
-                      </label>
-                    </div>
-                  )}
                   <div className="lab-record-grid">
                     <label>
-                      막힌 점
+                      실습 목표·계산 또는 선정 근거
                       <textarea
-                        value={lab.blocked}
+                        value={lab.purpose || ""}
                         onChange={(e) =>
-                          updateLab(lab.id, "blocked", e.target.value)
+                          updateLab(lab.id, "purpose", e.target.value)
                         }
-                        placeholder="어떤 현상에서 막혔나요?"
+                        placeholder="무엇을 확인하며, 어떤 계산·근거를 사용했나요?"
                       />
                     </label>
                     <label>
-                      해결을 위해 한 행동
+                      막힌 점과 해결 행동
                       <textarea
-                        value={lab.action}
+                        value={lab.action || lab.blocked}
                         onChange={(e) =>
                           updateLab(lab.id, "action", e.target.value)
                         }
-                        placeholder="가설·검색·측정·수정"
+                        placeholder="문제가 있었을 때만 가설·측정·수정을 적으세요."
                       />
                     </label>
                     <label className="wide">
-                      측정·검증 결과
+                      측정·검증 결과와 배운 점
                       <textarea
                         value={lab.result}
                         onChange={(e) =>
                           updateLab(lab.id, "result", e.target.value)
                         }
-                        placeholder="수치와 수정 전후 결과"
-                      />
-                    </label>
-                    <label>
-                      완료 날짜
-                      <input
-                        type="date"
-                        value={lab.date}
-                        onChange={(e) =>
-                          updateLab(lab.id, "date", e.target.value)
-                        }
+                        placeholder="핵심 수치, 예상과 실제 차이, 배운 점"
                       />
                     </label>
                   </div>
