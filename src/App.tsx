@@ -2937,7 +2937,18 @@ function SettingsPage() {
             동기화 코드
             <input value={syncCode} onChange={(event) => setSyncCode(event.target.value.toUpperCase())} placeholder="두 기기에 같은 코드 입력" />
           </label>
-          <button type="button" className="secondary" onClick={() => setSyncCode(generateSyncCode())}>새 코드 만들기</button>
+          <div className="sync-code-actions">
+            <button type="button" className="secondary" onClick={() => setSyncCode(generateSyncCode())}>새 코드 만들기</button>
+            <button
+              type="button"
+              className="secondary"
+              disabled={!syncCode.trim()}
+              onClick={async () => {
+                await navigator.clipboard.writeText(syncCode.trim().toUpperCase());
+                setSyncStatus("동기화 코드를 복사했습니다. 휴대폰에 그대로 붙여 넣으세요.");
+              }}
+            >코드 복사</button>
+          </div>
           <label>
             동기화 비밀번호
             <input type="password" value={syncPin} onChange={(event) => setSyncPin(event.target.value)} placeholder="6자 이상 · 두 기기에서 동일하게" />
@@ -2968,7 +2979,7 @@ function SettingsPage() {
           >이 기기 연결 해제</button>
         </div>
         <p className="sync-status">{syncWorking ? "동기화 중…" : syncStatus}</p>
-        <aside>처음 연결할 때는 내용이 있는 노트북에서 ‘이 기기 내용을 기준으로 저장’을 누른 뒤, 휴대폰에서 ‘다른 기기 내용 가져오기’를 눌러주세요. 이후 변경 내용은 자동으로 맞춰집니다. 일기와 지원 정보는 이 기기에서 암호화된 뒤 전송됩니다.</aside>
+        <aside>‘새 코드 만들기’는 기록이 있는 노트북에서 한 번만 사용하세요. 노트북의 ‘코드 복사’로 복사한 동일한 코드를 휴대폰에 붙여 넣어야 합니다. 노트북에서 ‘이 기기 내용을 기준으로 저장’을 누른 뒤 휴대폰에서 ‘다른 기기 내용 가져오기’를 눌러주세요.</aside>
       </article>
       <div className="settings-grid">
         <article className="panel">

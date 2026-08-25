@@ -1198,6 +1198,8 @@
   align-items: end;
   gap: 9px;
 }
+.sync-code-actions { display: flex; gap: 6px; align-items: end; }
+.sync-code-actions button { flex: 1; white-space: nowrap; }
 .cloud-sync-form label { display: grid; gap: 5px; color: #52665b; font-size: 9px; font-weight: 700; }
 .cloud-sync-form input {
   min-width: 0;
@@ -1225,6 +1227,7 @@
 @media (max-width: 700px) {
   .cloud-sync-heading { display: grid; }
   .cloud-sync-form { grid-template-columns: 1fr; }
+  .sync-code-actions { width: 100%; }
   .cloud-sync-form button { width: 100%; }
   .cloud-sync-actions { display: grid; }
   .cloud-sync-actions button.disconnect { margin-left: 0; }
