@@ -1220,7 +1220,7 @@ function DailyAgenda({
             <Plus /> 추가
           </button>
         </form>
-        <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
+        {catchUpTasks.length > 0 && <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
           <div className="catchup-heading">
             <div>
               <small>{isWeekend ? "주말 보충" : "주말 보충 예정"}</small>
@@ -1228,34 +1228,26 @@ function DailyAgenda({
             </div>
             <strong>{catchUpTasks.length}개</strong>
           </div>
-          {catchUpTasks.length ? (
-            <div className="catchup-tasks">
-              {catchUpTasks.map((task) => (
-                <label key={`${task.sourceDate}-${task.id}`}>
-                  <input
-                    type="checkbox"
-                    checked={false}
-                    onChange={() => finishCatchUpTask(task.sourceDate, task.id)}
-                  />
-                  <i><Check /></i>
-                  <span>
-                    <b>{task.text}</b>
-                    <small>{task.sourceDate.replaceAll("-", ".")} 미완료</small>
-                  </span>
-                </label>
-              ))}
-            </div>
-          ) : (
-            <p>
-              {isWeekend
-                ? "이번 주에 밀린 일이 없습니다. 충분히 쉬고 다음 주를 준비하세요."
-                : "현재 주말로 넘길 미완료 항목이 없습니다."}
-            </p>
-          )}
+          <div className="catchup-tasks">
+            {catchUpTasks.map((task) => (
+              <label key={`${task.sourceDate}-${task.id}`}>
+                <input
+                  type="checkbox"
+                  checked={false}
+                  onChange={() => finishCatchUpTask(task.sourceDate, task.id)}
+                />
+                <i><Check /></i>
+                <span>
+                  <b>{task.text}</b>
+                  <small>{task.sourceDate.replaceAll("-", ".")} 미완료</small>
+                </span>
+              </label>
+            ))}
+          </div>
           <p className="catchup-guide">
             평일에 체크하지 못한 항목은 자동으로 이곳에 모입니다. 주말에 완료하면 원래 날짜의 체크리스트에도 반영됩니다.
           </p>
-        </div>
+        </div>}
       </article>
     </section>
   );
