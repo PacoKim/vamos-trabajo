@@ -2909,7 +2909,7 @@ function SettingsPage() {
           <div>
             <small>PC ↔ 모바일</small>
             <h2>암호화 클라우드 동기화</h2>
-            <p>두 기기에 같은 동기화 코드와 비밀번호를 입력하면 15초 안에 최신 기록이 반영됩니다.</p>
+            <p>두 기기에 같은 동기화 코드와 비밀번호를 입력하면 약 5초 안에 최신 기록이 반영됩니다.</p>
           </div>
           <span className={syncConnected ? "connected" : ""}>{syncConnected ? "연결됨" : "연결 안 됨"}</span>
         </div>
@@ -2934,8 +2934,8 @@ function SettingsPage() {
           </button>
         </div>
         <div className="cloud-sync-actions">
-          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => uploadCloud(syncCode, syncPin), "이 기기의 최신 데이터를 클라우드에 저장했습니다.")}>지금 클라우드에 저장</button>
-          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => downloadCloud(syncCode, syncPin), "클라우드 데이터를 가져왔습니다.")}>클라우드에서 다시 받기</button>
+          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => uploadCloud(syncCode, syncPin), "이 기기의 최신 내용을 클라우드에 저장했습니다.")}>이 기기 내용을 기준으로 저장</button>
+          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => downloadCloud(syncCode, syncPin), "다른 기기의 최신 내용을 가져왔습니다.")}>다른 기기 내용 가져오기</button>
           <button
             className="disconnect"
             disabled={syncWorking || !syncConnected}
@@ -2949,7 +2949,7 @@ function SettingsPage() {
           >이 기기 연결 해제</button>
         </div>
         <p className="sync-status">{syncWorking ? "동기화 중…" : syncStatus}</p>
-        <aside>일기와 지원 정보는 이 기기에서 암호화된 뒤 전송됩니다. 동기화 코드와 비밀번호를 잃어버리면 복구할 수 없으니 따로 보관하세요.</aside>
+        <aside>처음 연결할 때는 내용이 있는 노트북에서 ‘이 기기 내용을 기준으로 저장’을 누른 뒤, 휴대폰에서 ‘다른 기기 내용 가져오기’를 눌러주세요. 이후 변경 내용은 자동으로 맞춰집니다. 일기와 지원 정보는 이 기기에서 암호화된 뒤 전송됩니다.</aside>
       </article>
       <div className="settings-grid">
         <article className="panel">

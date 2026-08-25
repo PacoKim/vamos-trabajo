@@ -96,6 +96,7 @@ export const uploadCloud = async (code: string, pin: string) => {
   const result: CloudRecord = await response.json();
   localStorage.setItem(HASH_KEY, await digest(snapshot));
   localStorage.setItem(CLOUD_TIME_KEY, String(result.updatedAt));
+  window.dispatchEvent(new CustomEvent("ahw-sync-status", { detail: "이 기기의 변경 내용을 클라우드에 저장했습니다." }));
   return result;
 };
 
@@ -116,6 +117,7 @@ export const downloadCloud = async (code: string, pin: string, reload = true) =>
   const snapshot = collectAppData();
   localStorage.setItem(HASH_KEY, await digest(snapshot));
   localStorage.setItem(CLOUD_TIME_KEY, String(cloud.updatedAt));
+  window.dispatchEvent(new CustomEvent("ahw-sync-status", { detail: "다른 기기의 최신 내용을 가져왔습니다." }));
   if (reload) location.reload();
   return true;
 };
@@ -173,11 +175,20 @@ export const startCloudAutoSync = () => {
     }
   };
   void run();
-  const timer = window.setInterval(run, 15000);
+  // 휴대폰 브라우저는 백그라운드 타이머를 오래 멈출 수 있으므로 짧은 주기와
+  // 화면 복귀 이벤트를 함께 사용한다. 변경이 없으면 쓰기 요청은 보내지 않는다.
+  const timer = window.setInterval(run, 5000);
   const onVisible = () => { if (document.visibilityState === "visible") void run(); };
+  const onResume = () => { void run(); };
   document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("focus", onResume);
+  window.addEventListener("pageshow", onResume);
+  window.addEventListener("online", onResume);
   return () => {
     window.clearInterval(timer);
     document.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("focus", onResume);
+    window.removeEventListener("pageshow", onResume);
+    window.removeEventListener("online", onResume);
   };
 };
