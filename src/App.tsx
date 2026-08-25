@@ -8,6 +8,7 @@ import {
   generateSyncCode,
   getSyncCredentials,
   startCloudAutoSync,
+  syncLocalChangesNow,
   uploadCloud,
 } from "./cloudSync";
 import {
@@ -2046,6 +2047,7 @@ function Journal({
         },
       ]),
     );
+    void syncLocalChangesNow();
     setRevision((v) => v + 1);
     setSaved(true);
     setGptAnswer("");
@@ -2472,6 +2474,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
     const updated = items.map((current) => current.id === item.id ? { ...current, usefulness } : current);
     setItems(updated);
     localStorage.setItem("ahw-experiences", JSON.stringify(updated));
+    void syncLocalChangesNow();
   };
   const startEdit = (x: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -2491,6 +2494,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
       localStorage.getItem("ahw-experiences") || "[]",
     ).map((item: any) => (item.id === draft.id ? draft : item));
     localStorage.setItem("ahw-experiences", JSON.stringify(savedItems));
+    void syncLocalChangesNow();
     setItems((current) =>
       current.map((item) => (item.id === draft.id ? draft : item)),
     );

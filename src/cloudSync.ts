@@ -148,6 +148,21 @@ export const getSyncCredentials = () => ({
   pin: localStorage.getItem(PIN_KEY) || "",
 });
 
+/** 저장 버튼을 누른 중요한 변경은 다음 자동 주기를 기다리지 않고 즉시 보낸다. */
+export const syncLocalChangesNow = async () => {
+  const { code, pin } = getSyncCredentials();
+  if (!code || !pin) return false;
+  try {
+    await uploadCloud(code, pin);
+    return true;
+  } catch (error) {
+    window.dispatchEvent(new CustomEvent("ahw-sync-status", {
+      detail: error instanceof Error ? error.message : "즉시 동기화에 실패했습니다.",
+    }));
+    return false;
+  }
+};
+
 export const disconnectCloud = () => {
   [CODE_KEY, PIN_KEY, HASH_KEY, CLOUD_TIME_KEY].forEach((key) => localStorage.removeItem(key));
 };
