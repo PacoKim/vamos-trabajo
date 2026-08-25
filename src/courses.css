@@ -524,6 +524,9 @@
 .lecture-heading > div:last-child { display: flex; gap: 7px; }
 .lecture-heading input, .lecture-heading select, .lecture-identity input, .lecture-identity select { min-width: 0; border: 1px solid #d5ddd7; background: white; padding: 9px; font: inherit; font-size: 9px; }
 .lecture-identity { display: grid; grid-template-columns: 1fr 2fr .7fr .8fr 1fr; gap: 8px; margin-bottom: 12px; }
+.lecture-identity.simple { grid-template-columns: 1fr 2fr; }
+.lecture-complete { display:flex;align-items:center;gap:9px;padding:11px 12px;margin-bottom:10px;background:#eef5e8;color:#35563f;font-size:11px;font-weight:800;cursor:pointer }
+.lecture-complete input{position:absolute;opacity:0}.lecture-complete i{width:18px;height:18px;border:1px solid #8ca285;background:white;display:grid;place-items:center}.lecture-complete svg{width:13px;height:13px}.essential-notes{grid-template-columns:repeat(3,minmax(0,1fr))}.essential-notes textarea{min-height:86px}
 .lecture-identity label, .lecture-memo { display: grid; gap: 5px; color: #51675b; font-size: 8px; font-weight: 700; }
 .lecture-memo textarea { min-height: 70px; border: 1px solid #d5ddd7; padding: 9px; resize: vertical; font: inherit; }
 .project-boundaries { grid-template-columns: 1fr 1fr !important; gap: 10px; }
@@ -553,6 +556,7 @@
   }
   .phase-roadmap { grid-template-columns: 1fr 1fr; }
   .lecture-identity { grid-template-columns: 1fr 1fr; }
+  .lecture-identity.simple,.essential-notes { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
   .course-snapshot {
