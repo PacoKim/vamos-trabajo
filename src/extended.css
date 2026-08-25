@@ -804,6 +804,9 @@
 }
 .material-status.usable { background: #e5f0dd; color: #47653a; }
 .material-status.empty { background: #edf0ee; color: #77827c; }
+.experience-rating { display:inline-flex;align-items:center;gap:5px;margin:7px 0 0 7px;vertical-align:middle }
+.experience-rating b { color:#769846;font-size:12px;letter-spacing:1px }
+.experience-rating small { color:#708078;font-size:8px;font-weight:800 }
 .screening-result {
   padding: 16px;
   border-left: 3px solid #83a950;

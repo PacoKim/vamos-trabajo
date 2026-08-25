@@ -2009,7 +2009,7 @@ function Journal({
     const [y, m, d] = v.split("-");
     return `${y}. ${Number(m)}. ${Number(d)}.`;
   };
-  const gptPrompt = `아래 내용은 자소서 초안이 아니라 ${formatDate(date)}에 작성한 개인 일기야. 여러 날짜의 기록을 충분히 모은 뒤, 나중에 서로 합쳐 자소서를 작성할 계획이야. 지금은 이 하루의 기록에서 실제로 자소서에 보탤 만한 사실이 있는지만 엄격하게 선별해줘.\n\n[활동 정보]\n- 활동 유형: ${activity.category}\n- 활동명: ${activity.title || "미입력"}\n- 기관·팀: ${activity.organization || "미입력"}\n- 내 역할: ${activity.role || "미입력"}\n- 목표 직무: 자동차 전장 HW R&D\n- 목표 기업: 1순위 현대자동차, 2순위 현대모비스, 3순위 기아\n\n[이날의 일기 원문]\n${value}\n\n[판단 원칙]\n1. 모든 날짜에서 억지로 자소서 소재를 만들지 마. 직무 역량, 문제 해결, 협업, 책임감, 도전, 개선, 수치로 확인되는 결과 중 실제 근거가 있을 때만 뽑아줘.\n2. 기록에 없는 행동·성과·수치·의도는 절대 추측하거나 만들어내지 마.\n3. 완성된 STAR나 자소서 문장을 쓰지 마. 나중에 여러 날짜의 기록과 합칠 수 있는 짧은 후보 메모만 만들어줘.\n4. 일상적인 내용뿐이거나 근거가 부족하면 솔직하게 “이 날은 자소서에 활용할 만한 소재가 없습니다.”라고 답해줘.\n5. 답변은 홈페이지에 그대로 붙여넣을 것이므로 아래 형식과 제목을 유지하고 짧고 읽기 쉽게 작성해줘.\n\n[출력 형식]\n[판정]\n활용 후보 있음 / 없음 중 하나\n\n판정이 ‘없음’이면 아래 한 줄만 추가:\n[짧은 이유]\n이 날은 자소서에 활용할 만한 소재가 없습니다. — 이유를 한 문장으로 작성\n\n판정이 ‘활용 후보 있음’이면 아래만 작성:\n[소재 한 줄]\n핵심 사실을 1문장으로 요약\n\n[쓸 수 있는 근거]\n- 원문에서 확인되는 행동·결과를 최대 3개\n\n[보이는 역량]\n- 역량 키워드 최대 3개\n\n[나중에 합칠 키워드]\n- 같은 문제·프로젝트·역량의 다른 날짜 기록을 찾기 위한 키워드 최대 3개\n\n[추가로 확인할 사실]\n- 수치, 본인 기여 범위 등 정말 필요한 질문만 최대 2개`;
+  const gptPrompt = `아래 내용은 자소서 초안이 아니라 ${formatDate(date)}에 작성한 개인 일기야. 여러 날짜의 기록을 충분히 모은 뒤, 나중에 서로 합쳐 자소서를 작성할 계획이야. 지금은 이 하루의 기록에서 실제로 자소서에 보탤 만한 사실이 있는지만 엄격하게 선별해줘.\n\n[활동 정보]\n- 활동 유형: ${activity.category}\n- 활동명: ${activity.title || "미입력"}\n- 기관·팀: ${activity.organization || "미입력"}\n- 내 역할: ${activity.role || "미입력"}\n- 목표 직무: 자동차 전장 HW R&D\n- 목표 기업: 1순위 현대자동차, 2순위 현대모비스, 3순위 기아\n\n[이날의 일기 원문]\n${value}\n\n[판단 원칙]\n1. 모든 날짜에서 억지로 자소서 소재를 만들지 마. 직무 역량, 문제 해결, 협업, 책임감, 도전, 개선, 수치로 확인되는 결과 중 실제 근거가 있을 때만 뽑아줘.\n2. 기록에 없는 행동·성과·수치·의도는 절대 추측하거나 만들어내지 마.\n3. 완성된 STAR나 자소서 문장을 쓰지 마. 나중에 여러 날짜의 기록과 합칠 수 있는 짧은 후보 메모만 만들어줘.\n4. 일상적인 내용뿐이거나 근거가 부족하면 솔직하게 “이 날은 자소서에 활용할 만한 소재가 없습니다.”라고 답해줘.\n5. 자소서 활용도를 별 5개 기준으로 엄격하게 평가해. 0점은 소재 없음, 1점은 근거 부족, 2점은 보조 소재, 3점은 추가 근거가 있으면 활용 가능, 4점은 구체적인 행동·결과가 있는 강한 소재, 5점은 직무 연관성과 본인 행동·수치·검증 결과가 모두 분명한 핵심 소재야.\n6. 답변은 홈페이지가 별점을 자동 인식할 수 있도록 아래 제목과 형식을 정확히 유지해줘.\n\n[출력 형식]\n[판정]\n활용 후보 있음 / 없음 중 하나\n\n[자소서 활용도]\n0/5, 1/5, 2/5, 3/5, 4/5, 5/5 중 하나\n\n[별점 이유]\n평가 이유를 한 문장으로 작성\n\n판정이 ‘없음’이면 아래 한 줄만 추가:\n[짧은 이유]\n이 날은 자소서에 활용할 만한 소재가 없습니다. — 이유를 한 문장으로 작성\n\n판정이 ‘활용 후보 있음’이면 아래만 작성:\n[소재 한 줄]\n핵심 사실을 1문장으로 요약\n\n[쓸 수 있는 근거]\n- 원문에서 확인되는 행동·결과를 최대 3개\n\n[보이는 역량]\n- 역량 키워드 최대 3개\n\n[나중에 합칠 키워드]\n- 같은 문제·프로젝트·역량의 다른 날짜 기록을 찾기 위한 키워드 최대 3개\n\n[추가로 확인할 사실]\n- 수치, 본인 기여 범위 등 정말 필요한 질문만 최대 2개`;
   const copyPrompt = async () => {
     if (!value.trim()) return;
     await navigator.clipboard.writeText(gptPrompt);
@@ -2018,6 +2018,7 @@ function Journal({
   const save = () => {
     if (!value.trim() || !gptAnswer.trim()) return;
     const noMaterial = /\[판정\]\s*없음|활용할 만한 소재가 없습니다/.test(gptAnswer);
+    const parsedRating = Number(gptAnswer.match(/\[자소서 활용도\]\s*\n?\s*([0-5])\s*\/\s*5/)?.[1] ?? (noMaterial ? 0 : 3));
     const materialLine = gptAnswer.match(/\[소재 한 줄\]\s*\n?([^\n]+)/)?.[1]?.trim();
     const old = JSON.parse(localStorage.getItem("ahw-experiences") || "[]");
     localStorage.setItem(
@@ -2035,6 +2036,7 @@ function Journal({
           gptPrompt,
           gptAnswer,
           screeningVersion: 1,
+          rating: parsedRating,
           usable: !noMaterial,
           usefulness: noMaterial ? "없음" : "보통",
           summary: noMaterial
@@ -2452,6 +2454,9 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
     item.usefulness ||
     (item.usable === false ? "없음" : item.usable === true || item.gptAnswer ? "보통" : "보류");
   const usefulnessScore: Record<string, number> = { 높음: 3, 보통: 2, 보류: 1, 없음: 0 };
+  const getRating = (item: any) => Number.isFinite(Number(item.rating))
+    ? Math.max(0, Math.min(5, Number(item.rating)))
+    : (({ 높음: 4, 보통: 3, 보류: 2, 없음: 0 } as Record<string, number>)[getUsefulness(item)] ?? 0);
   const visibleItems = items
     .filter((item) => categoryFilter === "전체" || (item.category || "인턴") === categoryFilter)
     .filter((item) => {
@@ -2462,7 +2467,7 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
     })
     .sort((a, b) => sortOrder === "최신순"
       ? String(b.date || b.id).localeCompare(String(a.date || a.id))
-      : usefulnessScore[getUsefulness(b)] - usefulnessScore[getUsefulness(a)] ||
+      : getRating(b) - getRating(a) || usefulnessScore[getUsefulness(b)] - usefulnessScore[getUsefulness(a)] ||
         String(b.date || b.id).localeCompare(String(a.date || a.id)));
   const shownItems = visibleItems.slice(0, visibleLimit);
   const updateUsefulness = (item: any, usefulness: string, event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -2551,6 +2556,10 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                     {x.usable ? "활용 후보 있음" : "이 날은 소재 없음"}
                   </em>
                 )}
+                <span className="experience-rating" aria-label={`자소서 활용도 ${getRating(x)}점 만점 5점`}>
+                  <b>{"★".repeat(getRating(x))}{"☆".repeat(5 - getRating(x))}</b>
+                  <small>{getRating(x)}/5</small>
+                </span>
                 <p>{x.summary}</p>
               </div>
               <div className="experience-actions">
@@ -2608,6 +2617,12 @@ function Experience({ embedded = false }: { embedded?: boolean }) {
                         자소서 활용도
                         <select value={draft.usefulness || getUsefulness(draft)} onChange={(e) => setDraft({ ...draft, usefulness: e.target.value })}>
                           {usefulnessLevels.map((level) => <option key={level}>{level}</option>)}
+                        </select>
+                      </label>
+                      <label>
+                        자소서 별점
+                        <select value={getRating(draft)} onChange={(e) => setDraft({ ...draft, rating: Number(e.target.value) })}>
+                          {[0, 1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating}/5</option>)}
                         </select>
                       </label>
                       <label>
