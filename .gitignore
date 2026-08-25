@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .gencow/
+.wrangler/
 gencow/
 src/gencow/
 *.log

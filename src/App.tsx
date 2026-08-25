@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import CircuitStarter from "./CircuitStarter";
 import CourseManager from "./CourseManager";
 import {
+  connectCloud,
+  disconnectCloud,
+  downloadCloud,
+  generateSyncCode,
+  getSyncCredentials,
+  startCloudAutoSync,
+  uploadCloud,
+} from "./cloudSync";
+import {
   BarChart3,
   BookOpen,
   BriefcaseBusiness,
@@ -721,6 +730,7 @@ export default function App() {
     [done],
   );
   useEffect(() => localStorage.setItem("ahw-journal", journal), [journal]);
+  useEffect(() => startCloudAutoSync(), []);
   const recommendedWeek =
     weeks.find((item) =>
       item.tasks.some((_, index) => !done[`w${item.n}-${index}`]),
@@ -2832,6 +2842,30 @@ function Review({ completed, total }: { completed: number; total: number }) {
   );
 }
 function SettingsPage() {
+  const savedCredentials = getSyncCredentials();
+  const [syncCode, setSyncCode] = useState(savedCredentials.code);
+  const [syncPin, setSyncPin] = useState(savedCredentials.pin);
+  const [syncConnected, setSyncConnected] = useState(!!savedCredentials.code);
+  const [syncStatus, setSyncStatus] = useState(savedCredentials.code ? "이 기기는 클라우드 동기화에 연결되어 있습니다." : "아직 연결되지 않았습니다.");
+  const [syncWorking, setSyncWorking] = useState(false);
+  useEffect(() => {
+    const onStatus = (event: Event) => setSyncStatus((event as CustomEvent<string>).detail);
+    window.addEventListener("ahw-sync-status", onStatus);
+    return () => window.removeEventListener("ahw-sync-status", onStatus);
+  }, []);
+  const runSync = async (work: () => Promise<unknown>, success: string) => {
+    setSyncWorking(true);
+    try {
+      await work();
+      setSyncStatus(success);
+      return true;
+    } catch (error) {
+      setSyncStatus(error instanceof Error ? error.message : "동기화에 실패했습니다.");
+      return false;
+    } finally {
+      setSyncWorking(false);
+    }
+  };
   const exportData = () => {
     const data: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -2867,9 +2901,56 @@ function SettingsPage() {
   };
   return (
     <Page
-      title="Settings & Backup"
-      sub="기기의 데이터를 JSON으로 백업하고 다시 복원할 수 있습니다."
+      title="설정·백업"
+      sub="노트북과 휴대폰을 연결하고 데이터를 안전하게 백업합니다."
     >
+      <article className="panel cloud-sync">
+        <div className="cloud-sync-heading">
+          <div>
+            <small>PC ↔ 모바일</small>
+            <h2>암호화 클라우드 동기화</h2>
+            <p>두 기기에 같은 동기화 코드와 비밀번호를 입력하면 15초 안에 최신 기록이 반영됩니다.</p>
+          </div>
+          <span className={syncConnected ? "connected" : ""}>{syncConnected ? "연결됨" : "연결 안 됨"}</span>
+        </div>
+        <div className="cloud-sync-form">
+          <label>
+            동기화 코드
+            <input value={syncCode} onChange={(event) => setSyncCode(event.target.value.toUpperCase())} placeholder="두 기기에 같은 코드 입력" />
+          </label>
+          <button type="button" className="secondary" onClick={() => setSyncCode(generateSyncCode())}>새 코드 만들기</button>
+          <label>
+            동기화 비밀번호
+            <input type="password" value={syncPin} onChange={(event) => setSyncPin(event.target.value)} placeholder="6자 이상 · 두 기기에서 동일하게" />
+          </label>
+          <button
+            type="button"
+            disabled={syncWorking}
+            onClick={async () => {
+              if (await runSync(() => connectCloud(syncCode, syncPin), "클라우드 동기화 연결이 완료되었습니다.")) setSyncConnected(true);
+            }}
+          >
+            이 기기 연결
+          </button>
+        </div>
+        <div className="cloud-sync-actions">
+          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => uploadCloud(syncCode, syncPin), "이 기기의 최신 데이터를 클라우드에 저장했습니다.")}>지금 클라우드에 저장</button>
+          <button disabled={syncWorking || !syncConnected} onClick={() => runSync(() => downloadCloud(syncCode, syncPin), "클라우드 데이터를 가져왔습니다.")}>클라우드에서 다시 받기</button>
+          <button
+            className="disconnect"
+            disabled={syncWorking || !syncConnected}
+            onClick={() => {
+              disconnectCloud();
+              setSyncStatus("이 기기의 동기화 연결을 해제했습니다. 클라우드 데이터는 삭제되지 않습니다.");
+              setSyncCode("");
+              setSyncPin("");
+              setSyncConnected(false);
+            }}
+          >이 기기 연결 해제</button>
+        </div>
+        <p className="sync-status">{syncWorking ? "동기화 중…" : syncStatus}</p>
+        <aside>일기와 지원 정보는 이 기기에서 암호화된 뒤 전송됩니다. 동기화 코드와 비밀번호를 잃어버리면 복구할 수 없으니 따로 보관하세요.</aside>
+      </article>
       <div className="settings-grid">
         <article className="panel">
           <Download />
@@ -2894,14 +2975,6 @@ function SettingsPage() {
           </label>
         </article>
       </div>
-      <article className="panel sync">
-        <h2>PC ↔ 모바일 데이터</h2>
-        <p>
-          현재 MVP는 기기별 LocalStorage를 사용합니다. 다른 기기에는 JSON 백업을
-          가져와 복원하세요. 실시간 동기화는 다음 단계에서 인증과 Supabase
-          저장소를 연결하도록 데이터 계층을 분리합니다.
-        </p>
-      </article>
     </Page>
   );
 }

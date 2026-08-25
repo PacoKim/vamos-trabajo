@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vamos-trabajo",
+  "compatibility_date": "2026-08-25",
+  "pages_build_output_dir": "./dist",
+  "kv_namespaces": [
+    {
+      "binding": "SYNC_STORE",
+      "id": "759fb4d9825f451aabcb1b970a2fe9a8"
+    }
+  ]
+}
