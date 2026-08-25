@@ -11,9 +11,9 @@ const skillAreas = ["회로 기초", "전자부품", "STM32", "MCU 주변장치"
 const evidenceTypes = ["블록도", "회로 계산", "데이터시트 분석", "회로도", "PCB", "펌웨어", "측정", "디버깅", "기술 노트", "포트폴리오"];
 const phases = [
   ["1단계", "교육 기반 HW 프로젝트", "2026.08–10", "전동킥보드 개발 과정을 따라가며 HW 개발 전체 흐름을 경험"],
-  ["2단계", "자동차 전장 확장", "2026.10–11", "CAN·LIN·차량 전원·보호·EMC·ESD 확장"],
-  ["3단계", "독립 자동차 HW 프로젝트", "2026.11–12", "자동차 CAN 센서 ECU를 요구사항부터 독립 설계"],
-  ["4단계", "취업 준비", "2026.12 이후", "포트폴리오·자소서·기술/인성면접·인적성"],
+  ["2단계", "자동차 전장 확장", "강의 완료 후", "CAN·LIN·차량 전원·보호·EMC·ESD 개념 확장"],
+  ["3단계", "독립 자동차 HW 프로젝트", "기초 개념 확보 후", "자동차 CAN 센서 ECU를 요구사항부터 독립 설계"],
+  ["4단계", "취업 준비", "프로젝트와 병행", "포트폴리오·자소서·기술/인성면접·인적성"],
 ];
 const defaultCourse = { title: "전동킥보드로 배우는 임베디드 실전 프로젝트", platform: "인프런", category: "GUIDED PROJECT", totalLectures: 159, officialLectureCount: 152, startDate: "2026-08-24", targetDate: "2026-10-31", weeklyGoal: "핵심 목표 최대 3개 · 강의 진도보다 이해와 결과물 우선", guidedProject: "Electric Kickboard BLDC Motor Controller", independentProject: "Automotive CAN Sensor ECU" };
 const emptyNotes = { learned: "", practiced: "", unknown: "", problem: "", hypothesis: "", attempt: "", result: "", internship: "", automotive: "", interview: "" };

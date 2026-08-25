@@ -630,8 +630,8 @@ const koreanPhase = (phase: string) => ({
 }[phase] || phase);
 const optimizedDailySchedule = [
   {
-    day: "일요일", type: "보충·회고·재계획", focus: "다음 주를 가볍게 만드는 날",
-    events: [["오전 60~90분", "주말 보충함의 가장 중요한 항목 1개"], ["오후", "헬스 1시간 30분과 충분한 휴식"], ["20:30–21:00", "주간 회고와 미완료 처리 결정"], ["21:00–21:20", "다음 주 목표 3개·월요일 자료 준비"]],
+    day: "일요일", type: "강의·회고·재계획", focus: "강의 진도를 확보하고 다음 주를 준비",
+    events: [["오전 60~90분", "전동킥보드 강의 2강과 핵심 내용 기록"], ["오후", "헬스 1시간 30분과 충분한 휴식"], ["20:30–21:00", "주간 회고와 미완료 처리 결정"], ["21:00–21:20", "다음 주 목표 3개·월요일 자료 준비"]],
   },
   {
     day: "월요일", type: "회복·회로 기초", focus: "부담 없이 학습 흐름 재개",
@@ -642,20 +642,20 @@ const optimizedDailySchedule = [
     events: [["출퇴근", "인적성 10문제 또는 오답 10분"], ["19:00–20:00", "저녁과 휴식"], ["20:00–20:40", "전동킥보드 강의와 핵심 노트"], ["20:50–21:40", "관련 계산·회로·Firmware 실습"], ["21:40–21:50", "직접 한 것과 결과 기록"]],
   },
   {
-    day: "수요일", type: "회복·자동차 확장", focus: "짧게 연결하고 오래 지속",
-    events: [["출퇴근", "영어 20분 또는 TOEIC Speaking 1세트"], ["19:00–21:00", "헬스·샤워·저녁"], ["21:30–21:50", "CAN·차량 전원·보호·EMC 중 1개"], ["21:50–22:05", "강의 내용과 자동차 적용 차이 정리"], ["22:05–22:10", "모르는 점과 확인할 것 기록"]],
+    day: "수요일", type: "회복·강의 복습", focus: "강의 개념을 내 말로 정리",
+    events: [["출퇴근", "영어 20분 또는 TOEIC Speaking 1세트"], ["19:00–21:00", "헬스·샤워·저녁"], ["21:30–21:55", "이번 주 강의의 회로·MCU 개념 복습"], ["21:55–22:05", "모르는 점과 확인할 것 기록"]],
   },
   {
-    day: "목요일", type: "독립 CAN ECU", focus: "주중 프로젝트 집중",
-    events: [["출퇴근", "인적성 10문제 또는 오답 10분"], ["19:00–20:00", "저녁과 휴식"], ["20:00–21:10", "CAN Sensor ECU 설계 결정 1개"], ["21:10–21:30", "선정 근거·검증 방법 정리"], ["21:30–21:40", "문제·가설·다음 행동 기록"]],
+    day: "목요일", type: "강의 기반 HW 실습", focus: "CAN·ECU 전에 기초를 직접 확인",
+    events: [["출퇴근", "인적성 10문제 또는 오답 10분"], ["19:00–20:00", "저녁과 휴식"], ["20:00–21:10", "전동킥보드 강의 관련 회로·Firmware 실습"], ["21:10–21:30", "결과와 이해하지 못한 점 정리"], ["21:30–21:40", "다음 실습 행동 기록"]],
   },
   {
     day: "금요일", type: "회복·취업 Evidence", focus: "공부보다 정리와 회복",
     events: [["출퇴근", "영어 20분 또는 TOEIC Speaking 1세트"], ["19:00–21:00", "헬스·샤워·저녁"], ["21:30–21:50", "Evidence 또는 면접 답변 1개"], ["21:50–22:00", "빠진 학습 확인·자소서용 사실 기록"], ["이후", "휴식"]],
   },
   {
-    day: "토요일", type: "HW 실습·주말 보충", focus: "한 주의 실제 결과물 완성",
-    events: [["오전 2~3시간", "회로·Firmware·측정 실습"], ["오후 60~90분", "평일 미완료 중 중요한 항목부터 보충"], ["30분", "영어 또는 인적성 20문제"], ["20분", "사진·수치·결과를 Evidence로 정리"]],
+    day: "토요일", type: "강의·HW 실습", focus: "강의 진도와 실제 결과물을 함께 확보",
+    events: [["오전 60~90분", "전동킥보드 강의 2강과 핵심 내용 기록"], ["오후 2시간", "강의 관련 회로·Firmware·측정 실습"], ["30분", "영어 또는 인적성 20문제"], ["20분", "사진·수치·결과를 취업 증거로 정리"]],
   },
 ] as const;
 const nav: [[View, string, any], ...any[]] = [
@@ -972,6 +972,7 @@ function DailyAgenda({
   const dateKey = new Date(now.getTime() - offset * 60000)
     .toISOString()
     .slice(0, 10);
+  const isWeekend = now.getDay() === 0 || now.getDay() === 6;
   const schedule = schedules[now.getDay()];
   const mainSuggestions = current.tasks
     .map((text, index) => ({
@@ -991,23 +992,24 @@ function DailyAgenda({
     ["취업 준비", "공고 1개 확인 또는 자소서 소재 1개 검토"],
     ["주말 보충", "이번 주 미완료 항목 중 가장 중요한 1개만 수행"],
   ][now.getDay()];
-  const nextKickboardLecture = (() => {
+  const nextKickboardLectures = (() => {
     try {
       const saved = JSON.parse(
         localStorage.getItem("ahw-kickboard-lectures-v1") || "[]",
       );
       return Array.isArray(saved)
-        ? saved.find((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료")
-        : null;
+        ? saved.filter((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료").slice(0, isWeekend ? 2 : 1)
+        : [];
     } catch {
-      return null;
+      return [];
     }
   })();
+  const lectureNumbers = nextKickboardLectures.map((lecture: any) => `${lecture.number}강`).join(" · ");
   const kickboardTask = {
     track: "전동킥보드 강의",
-    text: nextKickboardLecture
-      ? `${nextKickboardLecture.number}강 · ${nextKickboardLecture.title || "실제 강의 제목 확인"} 수강 후 핵심 3줄 기록`
-      : "전동킥보드 강의 1강 수강 후 핵심 3줄 기록",
+    text: nextKickboardLectures.length
+      ? `${lectureNumbers} ${isWeekend ? "2강 " : ""}수강 후 핵심 내용 기록`
+      : `전동킥보드 강의 ${isWeekend ? "2강" : "1강"} 수강 후 핵심 내용 기록`,
     minimum: true,
   };
   const minimumTasks = [
@@ -1117,7 +1119,6 @@ function DailyAgenda({
       .toISOString()
       .slice(0, 10);
   });
-  const isWeekend = now.getDay() === 0 || now.getDay() === 6;
   const catchUpTasks = weekdayKeys
     // 평일에는 오늘 이전 항목만, 주말에는 금요일까지의 항목만 보충 대상으로 본다.
     // 미리 생성된 미래 날짜 체크리스트가 보충함에 나타나는 문제를 막는다.
