@@ -1247,6 +1247,22 @@
     justify-content: flex-start;
     flex-wrap: wrap;
   }
+  .experience-card,
+  .experience-card.open { padding: 11px 12px; }
+  .experience-summary h2 { font-size: 12px; line-height: 1.35; }
+  .experience-summary > div:first-child > p,
+  .experience-card.open .experience-summary > div:first-child > p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+  .experience-detail { margin-top: 11px; padding-top: 11px; }
+  .screening-result { padding: 12px; }
+  .screening-result p { max-height: 220px; overflow-y: auto; font-size: 10px; line-height: 1.65; }
+  .experience-edit { padding: 12px; }
+  .experience-edit textarea { min-height: 110px; max-height: 220px; }
   .preparation-progress {
     margin: 14px;
     padding: 16px;
@@ -1382,7 +1398,11 @@
     grid-template-columns: 1fr;
   }
   .journal textarea {
-    min-height: 280px;
+    min-height: 160px;
+    max-height: 45vh;
+  }
+  .journal .gpt-workspace textarea {
+    min-height: 130px;
   }
   .architecture {
     margin-inline: -14px;
