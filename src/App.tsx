@@ -1118,13 +1118,15 @@ function DailyAgenda({
       .slice(0, 10);
   });
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-  const catchUpTasks = weekdayKeys.flatMap((key) =>
-    key === dateKey && !isWeekend
-      ? []
-      : (allTasks[key] || [])
-          .filter((task) => !task.done)
-          .map((task) => ({ ...task, sourceDate: key })),
-  );
+  const catchUpTasks = weekdayKeys
+    // 평일에는 오늘 이전 항목만, 주말에는 금요일까지의 항목만 보충 대상으로 본다.
+    // 미리 생성된 미래 날짜 체크리스트가 보충함에 나타나는 문제를 막는다.
+    .filter((key) => isWeekend ? key <= dateKey : key < dateKey)
+    .flatMap((key) =>
+      (allTasks[key] || [])
+        .filter((task) => !task.done && !(task.curriculumId && done[task.curriculumId]))
+        .map((task) => ({ ...task, sourceDate: key })),
+    );
   const finishCatchUpTask = (sourceDate: string, id: string) => {
     const sourceTask = (allTasks[sourceDate] || []).find((task) => task.id === id);
     if (sourceTask?.curriculumId) {
