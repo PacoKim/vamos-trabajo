@@ -9,3 +9,5 @@ src/gencow/
 *.tsbuildinfo
 .env
 .env.production
+.dev.vars
+.dev.vars.*

@@ -17,6 +17,7 @@
     "gencow.config.js",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "functions/**/*.ts",
     "vite.config.ts"
   ]
 }
