@@ -992,13 +992,30 @@ function DailyAgenda({
     ["토익스피킹", "미니 모의 1세트와 막힌 표현 정리"],
     ["토익스피킹", "실전 모의 1회·녹음 복기"],
   ][now.getDay()];
+  const savedAssignments: Record<string, any[]> = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("ahw-daily-checklists") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const assignedLectureNumbers = new Set<number>();
+  Object.values(savedAssignments).flat().forEach((task: any) => {
+    if (task.track !== "전동킥보드 강의") return;
+    const numbers = Array.isArray(task.lectureNumbers)
+      ? task.lectureNumbers
+      : Array.from(String(task.text || "").matchAll(/(\d+)강/g), (match) => Number(match[1]));
+    numbers.forEach((number: number) => assignedLectureNumbers.add(number));
+  });
   const nextKickboardLectures = (() => {
     try {
       const saved = JSON.parse(
         localStorage.getItem("ahw-kickboard-lectures-v1") || "[]",
       );
       return Array.isArray(saved)
-        ? saved.filter((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료").slice(0, isWeekend ? 2 : 1)
+        ? saved
+            .filter((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료" && !assignedLectureNumbers.has(Number(lecture.number)))
+            .slice(0, isWeekend ? 2 : 1)
         : [];
     } catch {
       return [];
@@ -1007,6 +1024,7 @@ function DailyAgenda({
   const lectureNumbers = nextKickboardLectures.map((lecture: any) => `${lecture.number}강`).join(" · ");
   const kickboardTask = {
     track: "전동킥보드 강의",
+    lectureNumbers: nextKickboardLectures.map((lecture: any) => Number(lecture.number)),
     text: nextKickboardLectures.length
       ? `${lectureNumbers} ${isWeekend ? "2강 " : ""}수강 후 핵심 내용 기록`
       : `전동킥보드 강의 ${isWeekend ? "2강" : "1강"} 수강 후 핵심 내용 기록`,
@@ -1075,6 +1093,19 @@ function DailyAgenda({
   });
   const [newTask, setNewTask] = useState("");
   const tasks = allTasks[dateKey] || [];
+  useEffect(() => {
+    const migrationKey = "ahw-daily-lecture-sequence-v1";
+    if (localStorage.getItem(migrationKey)) return;
+    setAllTasks((all) => ({
+      ...all,
+      [dateKey]: (all[dateKey] || []).map((task: any) =>
+        task.track === "전동킥보드 강의" && !task.done
+          ? { ...task, ...kickboardTask }
+          : task,
+      ),
+    }));
+    localStorage.setItem(migrationKey, "done");
+  }, []);
   useEffect(
     () => {
       localStorage.setItem("ahw-daily-items-cleared-v1", "done");
@@ -1101,9 +1132,34 @@ function DailyAgenda({
     ]);
     setNewTask("");
   };
+  const getTaskLectureNumbers = (task: any) => Array.isArray(task.lectureNumbers)
+    ? task.lectureNumbers.map(Number)
+    : Array.from(String(task.text || "").matchAll(/(\d+)강/g), (match) => Number(match[1]));
+  const updateLectureCompletion = (task: any, completed: boolean) => {
+    if (task.track !== "전동킥보드 강의") return;
+    const numbers = new Set(getTaskLectureNumbers(task));
+    if (!numbers.size) return;
+    try {
+      const lectures = JSON.parse(localStorage.getItem("ahw-kickboard-lectures-v1") || "[]");
+      if (!Array.isArray(lectures)) return;
+      const updated = lectures.map((lecture: any) => numbers.has(Number(lecture.number))
+        ? {
+            ...lecture,
+            status: completed ? "완료" : "시작 전",
+            studyDate: completed ? (lecture.studyDate || dateKey) : lecture.studyDate,
+            steps: { ...lecture.steps, watch: completed },
+          }
+        : lecture);
+      localStorage.setItem("ahw-kickboard-lectures-v1", JSON.stringify(updated));
+      void syncLocalChangesNow();
+    } catch {
+      // 손상된 강의 데이터가 있어도 일일 체크 자체는 계속 사용할 수 있게 둔다.
+    }
+  };
   const toggleDailyTask = (task: any) => {
     const next = !task.done;
     setTasks(tasks.map((item) => item.id === task.id ? { ...item, done: next } : item));
+    updateLectureCompletion(task, next);
     if (task.curriculumId) {
       setDone({ ...done, [task.curriculumId]: next });
     }
@@ -1133,6 +1189,7 @@ function DailyAgenda({
     if (sourceTask?.curriculumId) {
       setDone({ ...done, [sourceTask.curriculumId]: true });
     }
+    if (sourceTask) updateLectureCompletion(sourceTask, true);
     setAllTasks((all) => ({
       ...all,
       [sourceDate]: (all[sourceDate] || []).map((task) =>
