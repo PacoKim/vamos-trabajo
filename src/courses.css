@@ -490,6 +490,24 @@
 }
 .guided-warning b { font-size: 11px; letter-spacing: .05em; }
 .guided-warning p { margin: 0; font-size: 10px; line-height: 1.7; }
+.course-live-plan {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) 1fr max-content;
+  align-items: center;
+  gap: 18px;
+  margin-top: 12px;
+  padding: 17px 20px;
+  border: 1px solid #d8e1da;
+  background: #fff;
+}
+.course-live-plan small { color: #668173; font: 800 8px Manrope; letter-spacing: .1em; }
+.course-live-plan h2 { margin: 4px 0; color: #203b2f; font: 800 18px Manrope; }
+.course-live-plan p { margin: 0; color: #728078; font-size: 9px; }
+.live-plan-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.live-plan-stats span { display: grid; gap: 2px; padding: 9px; background: #f1f5f1; color: #718078; font-size: 8px; }
+.live-plan-stats b { color: #3d614b; font: 800 15px Manrope; }
+.course-live-plan > button { display: flex; align-items: center; gap: 6px; border: 0; background: #19382c; color: #fff; padding: 10px 12px; font-size: 9px; cursor: pointer; }
+.course-live-plan > button svg { width: 13px; }
 .phase-roadmap {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -525,6 +543,14 @@
 .lecture-heading input, .lecture-heading select, .lecture-identity input, .lecture-identity select { min-width: 0; border: 1px solid #d5ddd7; background: white; padding: 9px; font: inherit; font-size: 9px; }
 .lecture-identity { display: grid; grid-template-columns: 1fr 2fr .7fr .8fr 1fr; gap: 8px; margin-bottom: 12px; }
 .lecture-identity.simple { grid-template-columns: 1fr; }
+.lecture-identity.lecture-real-schedule { grid-template-columns: minmax(220px, 1.7fr) repeat(3, minmax(125px, .7fr)); }
+.lecture-status-actions { display: flex; align-items: center; gap: 6px; margin: 2px 0 12px; }
+.lecture-status-actions > span { display: flex; align-items: center; gap: 5px; margin-right: 4px; color: #607269; font-size: 9px; font-weight: 800; }
+.lecture-status-actions svg { width: 14px; }
+.lecture-status-actions button { border: 1px solid #d3ddd5; background: #fff; color: #69786f; padding: 7px 10px; font-size: 8px; cursor: pointer; }
+.lecture-status-actions button.active { border-color: #41634f; background: #41634f; color: #fff; }
+.lecture > header em.status-진행-중 { background: #fff2d8; color: #89661e; }
+.lecture > header em.status-완료 { background: #e8f3e2; color: #416b35; }
 .lecture-complete { display:flex;align-items:center;gap:9px;padding:11px 12px;margin-bottom:10px;background:#eef5e8;color:#35563f;font-size:11px;font-weight:800;cursor:pointer }
 .lecture-complete input{position:absolute;opacity:0}.lecture-complete i{width:18px;height:18px;border:1px solid #8ca285;background:white;display:grid;place-items:center}.lecture-complete svg{width:13px;height:13px}.essential-notes{grid-template-columns:repeat(3,minmax(0,1fr))}.essential-notes textarea{min-height:86px}
 .essential-steps{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px}.essential-notes.medium{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -540,6 +566,8 @@
 .rich-evidence-form label { display: flex; align-items: center; gap: 6px; color: #51675b; font-size: 9px; }
 .evidence-list em { color: #66824f; font-size: 8px; font-style: normal; font-weight: 700; }
 @media (max-width: 950px) {
+  .course-live-plan { grid-template-columns: 1fr 1fr; }
+  .course-live-plan > button { justify-self: start; }
   .course-snapshot {
     grid-template-columns: 1fr 1fr;
   }
@@ -557,9 +585,11 @@
   }
   .phase-roadmap { grid-template-columns: 1fr 1fr; }
   .lecture-identity { grid-template-columns: 1fr 1fr; }
-  .lecture-identity.simple,.essential-notes,.essential-notes.medium { grid-template-columns: 1fr; }
+  .lecture-identity.simple,.lecture-identity.lecture-real-schedule,.essential-notes,.essential-notes.medium { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
+  .course-live-plan { grid-template-columns: 1fr; padding: 15px; }
+  .live-plan-stats { width: 100%; }
   .course-snapshot {
     grid-template-columns: 1fr;
     margin: 14px;
@@ -615,9 +645,11 @@
   .courses-page {
     padding-inline: 14px;
   }
-  .guided-warning, .phase-roadmap, .separated-progress, .lecture-identity, .project-boundaries, .rich-evidence-form {
+  .guided-warning, .phase-roadmap, .separated-progress, .lecture-identity, .lecture-identity.lecture-real-schedule, .project-boundaries, .rich-evidence-form {
     grid-template-columns: 1fr !important;
   }
+  .lecture-status-actions { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .lecture-status-actions > span { grid-column: 1 / -1; }
   .lecture-heading > div:last-child { width: 100%; display: grid; grid-template-columns: 1fr; }
   .rich-evidence-form > input:nth-of-type(2) { grid-column: auto; }
 }
