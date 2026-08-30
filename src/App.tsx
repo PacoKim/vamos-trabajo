@@ -1035,15 +1035,21 @@ function DailyAgenda({
     : `이번 주 ${current.title} 학습에서 가장 어려웠던 점과 직접 해결한 과정을 설명해보세요.`;
   const interviewTask = {
     track: "면접 질문",
-    text: weekendInterviewQuestion,
+    text: "면접 관련 질문 하나 정리하기",
     interviewTitle: now.getDay() === 6 ? `${current.title} 기술면접` : "주간 경험·문제해결 면접",
     interviewQuestion: weekendInterviewQuestion,
     minimum: true,
   };
   const maintenanceTask = { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true };
+  const circuitTask = mainSuggestions[0] || {
+    track: "회로·HW 핵심",
+    text: "이번 주 회로·HW 핵심 내용 1개 복습",
+    curriculumId: `w${current.n}-review`,
+    minimum: true,
+  };
   const minimumTasks = isWeekend
-    ? [kickboardTask, maintenanceTask, interviewTask]
-    : [...mainSuggestions.slice(0, 1), kickboardTask, maintenanceTask].slice(0, 3);
+    ? [circuitTask, kickboardTask, maintenanceTask, interviewTask]
+    : [circuitTask, kickboardTask, maintenanceTask];
   const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
@@ -1111,15 +1117,17 @@ function DailyAgenda({
   }, []);
   useEffect(() => {
     if (!isWeekend) return;
-    const migrationKey = `ahw-weekend-interview-task-v1-${dateKey}`;
+    const migrationKey = `ahw-weekend-interview-task-v2-${dateKey}`;
     if (localStorage.getItem(migrationKey)) return;
     setAllTasks((all) => {
       const dayTasks = all[dateKey] || [];
-      if (dayTasks.some((task: any) => task.track === "면접 질문")) return all;
       const automatic = dayTasks.filter((task: any) => String(task.id || "").startsWith("daily-plan-v4-"));
       const custom = dayTasks.filter((task: any) => !String(task.id || "").startsWith("daily-plan-v4-"));
-      const withoutCircuit = automatic.filter((task: any) => task.track !== "회로·HW 핵심").slice(0, 2);
-      return { ...all, [dateKey]: [...withoutCircuit, { ...interviewTask, id: `daily-plan-v4-${dateKey}-2`, done: false }, ...custom] };
+      const weekendDefaults = [circuitTask, kickboardTask, maintenanceTask, interviewTask].map((generated: any, index) => {
+        const existing = automatic.find((task: any) => task.track === generated.track);
+        return { ...existing, ...generated, id: `daily-plan-v4-${dateKey}-${index}`, done: !!existing?.done };
+      });
+      return { ...all, [dateKey]: [...weekendDefaults, ...custom] };
     });
     localStorage.setItem(migrationKey, "done");
   }, []);
