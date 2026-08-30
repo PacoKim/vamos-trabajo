@@ -1030,11 +1030,20 @@ function DailyAgenda({
       : `전동킥보드 강의 ${isWeekend ? "2강" : "1강"} 수강 후 핵심 내용 기록`,
     minimum: true,
   };
-  const minimumTasks = [
-    ...mainSuggestions.slice(0, 1),
-    kickboardTask,
-    { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true },
-  ].slice(0, 3);
+  const weekendInterviewQuestion = now.getDay() === 6
+    ? current.question
+    : `이번 주 ${current.title} 학습에서 가장 어려웠던 점과 직접 해결한 과정을 설명해보세요.`;
+  const interviewTask = {
+    track: "면접 질문",
+    text: weekendInterviewQuestion,
+    interviewTitle: now.getDay() === 6 ? `${current.title} 기술면접` : "주간 경험·문제해결 면접",
+    interviewQuestion: weekendInterviewQuestion,
+    minimum: true,
+  };
+  const maintenanceTask = { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true };
+  const minimumTasks = isWeekend
+    ? [kickboardTask, maintenanceTask, interviewTask]
+    : [...mainSuggestions.slice(0, 1), kickboardTask, maintenanceTask].slice(0, 3);
   const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
@@ -1075,19 +1084,13 @@ function DailyAgenda({
       const id = String(task.id || "");
       return id.startsWith("daily-auto-") || id.startsWith("daily-plan-v2-") || id.startsWith("daily-plan-v3-");
     });
-    const previousCircuit = previousAutomatic.find((task: any) => task.track === "회로·HW 핵심" || task.curriculumId);
-    const previousCourse = previousAutomatic.find((task: any) => task.track === "전동킥보드 강의");
-    const previousSupport = previousAutomatic.find((task: any) => task.track !== "회로·HW 핵심" && task.track !== "전동킥보드 강의" && !task.curriculumId);
-    const generatedCircuit = defaultTasks.find((task: any) => task.track === "회로·HW 핵심");
-    const generatedCourse = defaultTasks.find((task: any) => task.track === "전동킥보드 강의");
-    const generatedSupport = defaultTasks.find((task: any) => task.track !== "회로·HW 핵심" && task.track !== "전동킥보드 강의");
-    const stableDefaults = [
-      previousCircuit || latestCompletedCircuitTask || generatedCircuit,
-      previousCourse || generatedCourse,
-      previousSupport || generatedSupport,
-    ]
-      .filter(Boolean)
-      .slice(0, 3)
+    const stableDefaults = defaultTasks
+      .map((generated: any) => {
+        const previous = previousAutomatic.find((task: any) => task.track === generated.track);
+        if (previous) return previous;
+        if (generated.track === "회로·HW 핵심" && latestCompletedCircuitTask) return latestCompletedCircuitTask;
+        return generated;
+      })
       .map((task: any, index) => ({ ...task, id: `daily-plan-v4-${dateKey}-${index}`, done: !!task.done }));
     return { ...saved, [dateKey]: [...stableDefaults, ...userTasks] };
   });
@@ -1104,6 +1107,20 @@ function DailyAgenda({
           : task,
       ),
     }));
+    localStorage.setItem(migrationKey, "done");
+  }, []);
+  useEffect(() => {
+    if (!isWeekend) return;
+    const migrationKey = `ahw-weekend-interview-task-v1-${dateKey}`;
+    if (localStorage.getItem(migrationKey)) return;
+    setAllTasks((all) => {
+      const dayTasks = all[dateKey] || [];
+      if (dayTasks.some((task: any) => task.track === "면접 질문")) return all;
+      const automatic = dayTasks.filter((task: any) => String(task.id || "").startsWith("daily-plan-v4-"));
+      const custom = dayTasks.filter((task: any) => !String(task.id || "").startsWith("daily-plan-v4-"));
+      const withoutCircuit = automatic.filter((task: any) => task.track !== "회로·HW 핵심").slice(0, 2);
+      return { ...all, [dateKey]: [...withoutCircuit, { ...interviewTask, id: `daily-plan-v4-${dateKey}-2`, done: false }, ...custom] };
+    });
     localStorage.setItem(migrationKey, "done");
   }, []);
   useEffect(
@@ -1156,10 +1173,31 @@ function DailyAgenda({
       // 손상된 강의 데이터가 있어도 일일 체크 자체는 계속 사용할 수 있게 둔다.
     }
   };
+  const saveInterviewQuestion = (task: any) => {
+    if (task.track !== "면접 질문" || !task.interviewQuestion) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("ahw-interview") || "[]");
+      const questions = Array.isArray(saved) ? saved : [];
+      if (questions.some((item: any) => item.q === task.interviewQuestion)) return;
+      questions.push({
+        week: Date.now(),
+        custom: true,
+        title: task.interviewTitle || "주말 면접 준비",
+        q: task.interviewQuestion,
+        answer: "",
+        sourceDate: dateKey,
+      });
+      localStorage.setItem("ahw-interview", JSON.stringify(questions));
+      void syncLocalChangesNow();
+    } catch {
+      // 질문 저장 데이터가 손상되어도 일일 체크는 계속 사용할 수 있게 둔다.
+    }
+  };
   const toggleDailyTask = (task: any) => {
     const next = !task.done;
     setTasks(tasks.map((item) => item.id === task.id ? { ...item, done: next } : item));
     updateLectureCompletion(task, next);
+    if (next) saveInterviewQuestion(task);
     if (task.curriculumId) {
       setDone({ ...done, [task.curriculumId]: next });
     }
@@ -1247,6 +1285,7 @@ function DailyAgenda({
                 <span>
                   {task.track && <small>{task.track} · {task.minimum ? "최소" : "추가"}</small>}
                   {task.text}
+                  {task.track === "면접 질문" && <em>체크하면 면접 질문 보관함에 저장됩니다.</em>}
                 </span>
                 <button
                   type="button"

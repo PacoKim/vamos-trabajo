@@ -282,6 +282,7 @@
   font-size: 11px;
 }
 .daily-tasks label > span small { display: block; margin-bottom: 2px; color: #789064; font-size: 7px; font-weight: 800; letter-spacing: .04em; }
+.daily-tasks label > span em { display: block; margin-top: 3px; color: #7d8b83; font-size: 8px; font-style: normal; text-decoration: none; }
 .daily-tasks input:checked ~ span {
   color: #929d97;
   text-decoration: line-through;
