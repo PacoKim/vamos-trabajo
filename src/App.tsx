@@ -1116,20 +1116,19 @@ function DailyAgenda({
     localStorage.setItem(migrationKey, "done");
   }, []);
   useEffect(() => {
-    if (!isWeekend) return;
-    const migrationKey = `ahw-weekend-interview-task-v2-${dateKey}`;
-    if (localStorage.getItem(migrationKey)) return;
     setAllTasks((all) => {
       const dayTasks = all[dateKey] || [];
       const automatic = dayTasks.filter((task: any) => String(task.id || "").startsWith("daily-plan-v4-"));
       const custom = dayTasks.filter((task: any) => !String(task.id || "").startsWith("daily-plan-v4-"));
-      const weekendDefaults = [circuitTask, kickboardTask, maintenanceTask, interviewTask].map((generated: any, index) => {
+      const restoredDefaults = defaultTasks.map((generated: any, index) => {
         const existing = automatic.find((task: any) => task.track === generated.track);
-        return { ...existing, ...generated, id: `daily-plan-v4-${dateKey}-${index}`, done: !!existing?.done };
+        if (!existing) return generated;
+        return generated.track === "면접 질문"
+          ? { ...existing, ...generated, id: `daily-plan-v4-${dateKey}-${index}`, done: !!existing.done }
+          : { ...generated, ...existing, id: `daily-plan-v4-${dateKey}-${index}` };
       });
-      return { ...all, [dateKey]: [...weekendDefaults, ...custom] };
+      return { ...all, [dateKey]: [...restoredDefaults, ...custom] };
     });
-    localStorage.setItem(migrationKey, "done");
   }, []);
   useEffect(
     () => {
@@ -1295,16 +1294,18 @@ function DailyAgenda({
                   {task.text}
                   {task.track === "면접 질문" && <em>체크하면 면접 질문 보관함에 저장됩니다.</em>}
                 </span>
-                <button
-                  type="button"
-                  aria-label={`${task.text} 삭제`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setTasks(tasks.filter((x) => x.id !== task.id));
-                  }}
-                >
-                  <X />
-                </button>
+                {!String(task.id || "").startsWith("daily-plan-v4-") && (
+                  <button
+                    type="button"
+                    aria-label={`${task.text} 삭제`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setTasks(tasks.filter((x) => x.id !== task.id));
+                    }}
+                  >
+                    <X />
+                  </button>
+                )}
               </label>
             ))
           ) : (
