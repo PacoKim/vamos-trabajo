@@ -186,6 +186,33 @@
   background: white;
   padding: 21px;
 }
+.daily-date-nav {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #edf0ed;
+}
+.daily-date-nav label {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  color: #789084;
+  font-size: 8px;
+  font-weight: 700;
+}
+.daily-date-nav input,
+.daily-date-nav button {
+  min-height: 34px;
+  border: 1px solid #d6dfd8;
+  background: #fff;
+  color: #425d4f;
+  font: inherit;
+}
+.daily-date-nav input { width: 100%; padding: 6px 8px; color: #314b3e; }
+.daily-date-nav button { min-width: 36px; padding: 7px 10px; cursor: pointer; font-size: 11px; font-weight: 800; }
+.daily-date-nav .today-button { background: #19382c; color: #fff; border-color: #19382c; font-size: 8px; }
 .daily-heading {
   display: flex;
   align-items: flex-start;
@@ -361,18 +388,22 @@
 .catchup-tasks {
   border-top: 1px solid #e0e7e1;
 }
-.catchup-tasks label {
+.catchup-tasks label,
+.catchup-completed {
   display: flex;
   align-items: center;
   gap: 9px;
   min-height: 45px;
   border-bottom: 1px solid #e0e7e1;
+}
+.catchup-tasks label {
   cursor: pointer;
 }
 .catchup-tasks input {
   display: none;
 }
-.catchup-tasks label > i {
+.catchup-tasks label > i,
+.catchup-completed > i {
   width: 20px;
   height: 20px;
   border: 1px solid #aab9af;
@@ -380,6 +411,12 @@
   display: grid;
   place-items: center;
 }
+.catchup-completed { color: #89958e; }
+.catchup-completed > i { border-color: #9db591; background: #e6f0df; color: #52733f; }
+.catchup-completed > span { display: grid; flex: 1; gap: 2px; font-size: 10px; }
+.catchup-completed > span b { color: #718078; text-decoration: line-through; }
+.catchup-completed > span small { color: #89958e; font-size: 8px; }
+.catchup-completed > em { padding: 4px 6px; background: #e6f0df; color: #52733f; font-size: 7px; font-style: normal; font-weight: 800; }
 .catchup-tasks label:hover > i {
   border-color: #66824f;
   color: #66824f;

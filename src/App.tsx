@@ -967,18 +967,21 @@ function DailyAgenda({
   onDataChange: () => void;
 }) {
   const schedules = optimizedDailySchedule;
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  const dateKey = new Date(now.getTime() - offset * 60000)
-    .toISOString()
-    .slice(0, 10);
+  const actualNow = new Date();
+  const actualOffset = actualNow.getTimezoneOffset();
+  const actualDateKey = new Date(actualNow.getTime() - actualOffset * 60000).toISOString().slice(0, 10);
+  const [dateKey, setDateKey] = useState(actualDateKey);
+  const now = new Date(`${dateKey}T12:00:00`);
+  const checklistStart = new Date("2026-08-24T00:00:00+09:00");
+  const selectedWeekIndex = Math.max(0, Math.floor((now.getTime() - checklistStart.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+  const dayCurriculum = weeks[Math.min(selectedWeekIndex, weeks.length - 1)] || current;
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
   const schedule = schedules[now.getDay()];
-  const mainSuggestions = current.tasks
+  const mainSuggestions = dayCurriculum.tasks
     .map((text, index) => ({
       text,
       track: "회로·HW 핵심",
-      curriculumId: `w${current.n}-${index}`,
+      curriculumId: `w${dayCurriculum.n}-${index}`,
       minimum: true,
     }))
     .filter((task) => !done[task.curriculumId])
@@ -1031,12 +1034,12 @@ function DailyAgenda({
     minimum: true,
   };
   const weekendInterviewQuestion = now.getDay() === 6
-    ? current.question
-    : `이번 주 ${current.title} 학습에서 가장 어려웠던 점과 직접 해결한 과정을 설명해보세요.`;
+    ? dayCurriculum.question
+    : `이번 주 ${dayCurriculum.title} 학습에서 가장 어려웠던 점과 직접 해결한 과정을 설명해보세요.`;
   const interviewTask = {
     track: "면접 질문",
     text: "면접 관련 질문 하나 정리하기",
-    interviewTitle: now.getDay() === 6 ? `${current.title} 기술면접` : "주간 경험·문제해결 면접",
+    interviewTitle: now.getDay() === 6 ? `${dayCurriculum.title} 기술면접` : "주간 경험·문제해결 면접",
     interviewQuestion: weekendInterviewQuestion,
     minimum: true,
   };
@@ -1044,13 +1047,12 @@ function DailyAgenda({
   const circuitTask = mainSuggestions[0] || {
     track: "회로·HW 핵심",
     text: "이번 주 회로·HW 핵심 내용 1개 복습",
-    curriculumId: `w${current.n}-review`,
+    curriculumId: `w${dayCurriculum.n}-review`,
     minimum: true,
   };
   const minimumTasks = isWeekend
     ? [circuitTask, kickboardTask, maintenanceTask, interviewTask]
     : [circuitTask, kickboardTask, maintenanceTask];
-  const checklistStart = new Date("2026-08-24T00:00:00+09:00");
   const checklistStarted = now >= checklistStart;
   const defaultTasks = checklistStarted
       ? minimumTasks.map((task, index) => ({
@@ -1114,7 +1116,7 @@ function DailyAgenda({
       ),
     }));
     localStorage.setItem(migrationKey, "done");
-  }, []);
+  }, [dateKey]);
   useEffect(() => {
     setAllTasks((all) => {
       const dayTasks = all[dateKey] || [];
@@ -1129,7 +1131,7 @@ function DailyAgenda({
       });
       return { ...all, [dateKey]: [...restoredDefaults, ...custom] };
     });
-  }, []);
+  }, [dateKey]);
   useEffect(
     () => {
       localStorage.setItem("ahw-daily-items-cleared-v1", "done");
@@ -1229,6 +1231,11 @@ function DailyAgenda({
         .filter((task) => !task.done && !(task.curriculumId && done[task.curriculumId]))
         .map((task) => ({ ...task, sourceDate: key })),
     );
+  const completedCatchUpTasks = weekdayKeys.flatMap((key) =>
+    (allTasks[key] || [])
+      .filter((task) => task.done && task.caughtUp)
+      .map((task) => ({ ...task, sourceDate: key })),
+  );
   const finishCatchUpTask = (sourceDate: string, id: string) => {
     const sourceTask = (allTasks[sourceDate] || []).find((task) => task.id === id);
     if (sourceTask?.curriculumId) {
@@ -1242,12 +1249,23 @@ function DailyAgenda({
       ),
     }));
   };
+  const moveDate = (amount: number) => {
+    const next = new Date(`${dateKey}T12:00:00`);
+    next.setDate(next.getDate() + amount);
+    setDateKey(new Date(next.getTime() - next.getTimezoneOffset() * 60000).toISOString().slice(0, 10));
+  };
   return (
     <section className="daily-overview">
       <article className="today-schedule">
+        <div className="daily-date-nav">
+          <button type="button" onClick={() => moveDate(-1)} aria-label="이전 날짜">←</button>
+          <label>확인할 날짜<input type="date" value={dateKey} min="2026-08-24" onChange={(e) => e.target.value && setDateKey(e.target.value)} /></label>
+          <button type="button" onClick={() => moveDate(1)} aria-label="다음 날짜">→</button>
+          {dateKey !== actualDateKey && <button type="button" className="today-button" onClick={() => setDateKey(actualDateKey)}>오늘</button>}
+        </div>
         <div className="daily-heading">
           <div>
-            <small>오늘 · {dateKey.replaceAll("-", ".")}</small>
+            <small>{dateKey === actualDateKey ? "오늘" : "선택한 날짜"} · {dateKey.replaceAll("-", ".")}</small>
             <h2>{schedule.day} 일정</h2>
           </div>
           <span>{schedule.focus}</span>
@@ -1266,7 +1284,7 @@ function DailyAgenda({
         <div className="daily-heading">
           <div>
             <small>일일 체크리스트 · 자동 최적화</small>
-            <h2>오늘 할 일</h2>
+            <h2>{dateKey === actualDateKey ? "오늘 할 일" : `${now.getMonth() + 1}월 ${now.getDate()}일 할 일`}</h2>
           </div>
           <strong>
             {completed}/{tasks.length}
@@ -1326,13 +1344,13 @@ function DailyAgenda({
             <Plus /> 추가
           </button>
         </form>
-        {catchUpTasks.length > 0 && <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
+        {(catchUpTasks.length > 0 || completedCatchUpTasks.length > 0) && <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
           <div className="catchup-heading">
             <div>
               <small>{isWeekend ? "주말 보충" : "주말 보충 예정"}</small>
               <h3>{isWeekend ? "이번 주 미완료 보충" : "주말 보충 예정"}</h3>
             </div>
-            <strong>{catchUpTasks.length}개</strong>
+            <strong>{catchUpTasks.length}개 미완료 · {completedCatchUpTasks.length}개 완료</strong>
           </div>
           <div className="catchup-tasks">
             {catchUpTasks.map((task) => (
@@ -1348,6 +1366,16 @@ function DailyAgenda({
                   <small>{task.sourceDate.replaceAll("-", ".")} 미완료</small>
                 </span>
               </label>
+            ))}
+            {completedCatchUpTasks.map((task) => (
+              <div className="catchup-completed" key={`completed-${task.sourceDate}-${task.id}`}>
+                <i><Check /></i>
+                <span>
+                  <b>{task.text}</b>
+                  <small>{task.sourceDate.replaceAll("-", ".")} 미완료 → {String(task.caughtUp).replaceAll("-", ".")} 보충 완료</small>
+                </span>
+                <em>완료</em>
+              </div>
             ))}
           </div>
           <p className="catchup-guide">
