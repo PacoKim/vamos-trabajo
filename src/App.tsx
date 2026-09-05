@@ -977,15 +977,8 @@ function DailyAgenda({
   const dayCurriculum = weeks[Math.min(selectedWeekIndex, weeks.length - 1)] || current;
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
   const schedule = schedules[now.getDay()];
-  const mainSuggestions = dayCurriculum.tasks
-    .map((text, index) => ({
-      text,
-      track: "회로·HW 핵심",
-      curriculumId: `w${dayCurriculum.n}-${index}`,
-      minimum: true,
-    }))
-    .filter((task) => !done[task.curriculumId])
-    .slice(0, 1);
+  const dayIndexInWeek = (now.getDay() + 6) % 7;
+  const circuitTaskIndex = dayIndexInWeek % dayCurriculum.tasks.length;
   const maintenanceByDay = [
     ["토익스피킹", "약점 파트 답변 2개 재녹음"],
     ["토익스피킹", "답변 구조·필수 표현 30분 소리 내어 연습"],
@@ -995,30 +988,25 @@ function DailyAgenda({
     ["토익스피킹", "미니 모의 1세트와 막힌 표현 정리"],
     ["토익스피킹", "실전 모의 1회·녹음 복기"],
   ][now.getDay()];
-  const savedAssignments: Record<string, any[]> = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("ahw-daily-checklists") || "{}");
-    } catch {
-      return {};
-    }
-  })();
-  const assignedLectureNumbers = new Set<number>();
-  Object.values(savedAssignments).flat().forEach((task: any) => {
-    if (task.track !== "전동킥보드 강의") return;
-    const numbers = Array.isArray(task.lectureNumbers)
-      ? task.lectureNumbers
-      : Array.from(String(task.text || "").matchAll(/(\d+)강/g), (match) => Number(match[1]));
-    numbers.forEach((number: number) => assignedLectureNumbers.add(number));
-  });
+  const scheduleStart = new Date("2026-08-24T12:00:00");
+  const elapsedDays = Math.max(0, Math.round((now.getTime() - scheduleStart.getTime()) / (24 * 60 * 60 * 1000)));
+  let firstLectureNumber = 1;
+  for (let index = 0; index < elapsedDays; index += 1) {
+    const date = new Date(scheduleStart);
+    date.setDate(scheduleStart.getDate() + index);
+    firstLectureNumber += date.getDay() === 0 || date.getDay() === 6 ? 2 : 1;
+  }
+  const plannedLectureNumbers = Array.from(
+    { length: isWeekend ? 2 : 1 },
+    (_, index) => firstLectureNumber + index,
+  ).filter((number) => number <= 159);
   const nextKickboardLectures = (() => {
     try {
       const saved = JSON.parse(
         localStorage.getItem("ahw-kickboard-lectures-v1") || "[]",
       );
       return Array.isArray(saved)
-        ? saved
-            .filter((lecture: any) => !lecture.steps?.watch && lecture.status !== "완료" && !assignedLectureNumbers.has(Number(lecture.number)))
-            .slice(0, isWeekend ? 2 : 1)
+        ? plannedLectureNumbers.map((number) => saved.find((lecture: any) => Number(lecture.number) === number) || { number })
         : [];
     } catch {
       return [];
@@ -1044,10 +1032,10 @@ function DailyAgenda({
     minimum: true,
   };
   const maintenanceTask = { track: maintenanceByDay[0], text: maintenanceByDay[1], minimum: true };
-  const circuitTask = mainSuggestions[0] || {
+  const circuitTask = {
     track: "회로·HW 핵심",
-    text: "이번 주 회로·HW 핵심 내용 1개 복습",
-    curriculumId: `w${dayCurriculum.n}-review`,
+    text: dayCurriculum.tasks[circuitTaskIndex],
+    curriculumId: `w${dayCurriculum.n}-${circuitTaskIndex}`,
     minimum: true,
   };
   const minimumTasks = isWeekend
@@ -1061,16 +1049,6 @@ function DailyAgenda({
         done: false,
       }))
     : [];
-  const latestCompletedCircuitTask = weeks
-    .flatMap((weekItem) => weekItem.tasks.map((text, index) => ({
-      text,
-      track: "회로·HW 핵심",
-      curriculumId: `w${weekItem.n}-${index}`,
-      minimum: true,
-      done: !!done[`w${weekItem.n}-${index}`],
-    })))
-    .filter((task) => task.done)
-    .at(-1);
   const [allTasks, setAllTasks] = useState<Record<string, any[]>>(() => {
     const saved = JSON.parse(
       localStorage.getItem("ahw-daily-checklists") || "{}",
@@ -1096,7 +1074,6 @@ function DailyAgenda({
       .map((generated: any) => {
         const previous = previousAutomatic.find((task: any) => task.track === generated.track);
         if (previous) return previous;
-        if (generated.track === "회로·HW 핵심" && latestCompletedCircuitTask) return latestCompletedCircuitTask;
         return generated;
       })
       .map((task: any, index) => ({ ...task, id: `daily-plan-v4-${dateKey}-${index}`, done: !!task.done }));
@@ -1125,7 +1102,7 @@ function DailyAgenda({
       const restoredDefaults = defaultTasks.map((generated: any, index) => {
         const existing = automatic.find((task: any) => task.track === generated.track);
         if (!existing) return generated;
-        return generated.track === "면접 질문"
+        return ["면접 질문", "회로·HW 핵심", "전동킥보드 강의"].includes(generated.track)
           ? { ...existing, ...generated, id: `daily-plan-v4-${dateKey}-${index}`, done: !!existing.done }
           : { ...generated, ...existing, id: `daily-plan-v4-${dateKey}-${index}` };
       });
