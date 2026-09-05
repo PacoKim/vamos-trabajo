@@ -1080,6 +1080,7 @@ function DailyAgenda({
     return { ...saved, [dateKey]: [...stableDefaults, ...userTasks] };
   });
   const [newTask, setNewTask] = useState("");
+  const [checklistTab, setChecklistTab] = useState<"daily" | "catchup">("daily");
   const tasks = allTasks[dateKey] || [];
   useEffect(() => {
     const migrationKey = "ahw-daily-lecture-sequence-v1";
@@ -1189,26 +1190,20 @@ function DailyAgenda({
     }
   };
   const completed = tasks.filter((task) => task.done).length;
-  const monday = new Date(now);
-  monday.setHours(12, 0, 0, 0);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  const weekdayKeys = Array.from({ length: 5 }, (_, i) => {
-    const day = new Date(monday);
-    day.setDate(monday.getDate() + i);
+  const recentDateKeys = Array.from({ length: 6 }, (_, index) => {
+    const today = new Date(`${actualDateKey}T12:00:00`);
+    const day = new Date(today);
+    day.setDate(today.getDate() - (6 - index));
     return new Date(day.getTime() - day.getTimezoneOffset() * 60000)
       .toISOString()
       .slice(0, 10);
   });
-  const catchUpTasks = weekdayKeys
-    // 평일에는 오늘 이전 항목만, 주말에는 금요일까지의 항목만 보충 대상으로 본다.
-    // 미리 생성된 미래 날짜 체크리스트가 보충함에 나타나는 문제를 막는다.
-    .filter((key) => isWeekend ? key <= dateKey : key < dateKey)
-    .flatMap((key) =>
+  const catchUpTasks = recentDateKeys.flatMap((key) =>
       (allTasks[key] || [])
         .filter((task) => !task.done && !(task.curriculumId && done[task.curriculumId]))
         .map((task) => ({ ...task, sourceDate: key })),
-    );
-  const completedCatchUpTasks = weekdayKeys.flatMap((key) =>
+  );
+  const completedCatchUpTasks = recentDateKeys.flatMap((key) =>
     (allTasks[key] || [])
       .filter((task) => task.done && task.caughtUp)
       .map((task) => ({ ...task, sourceDate: key })),
@@ -1222,7 +1217,7 @@ function DailyAgenda({
     setAllTasks((all) => ({
       ...all,
       [sourceDate]: (all[sourceDate] || []).map((task) =>
-        task.id === id ? { ...task, done: true, caughtUp: dateKey } : task,
+        task.id === id ? { ...task, done: true, caughtUp: actualDateKey } : task,
       ),
     }));
   };
@@ -1264,10 +1259,14 @@ function DailyAgenda({
             <h2>{dateKey === actualDateKey ? "오늘 할 일" : `${now.getMonth() + 1}월 ${now.getDate()}일 할 일`}</h2>
           </div>
           <strong>
-            {completed}/{tasks.length}
+            {checklistTab === "daily" ? `${completed}/${tasks.length}` : `${catchUpTasks.length}개`}
           </strong>
         </div>
-        <div className="daily-progress">
+        <div className="checklist-tabs">
+          <button type="button" className={checklistTab === "daily" ? "active" : ""} onClick={() => setChecklistTab("daily")}>오늘 체크리스트</button>
+          <button type="button" className={checklistTab === "catchup" ? "active" : ""} onClick={() => setChecklistTab("catchup")}>밀린 일 <em>{catchUpTasks.length}</em></button>
+        </div>
+        {checklistTab === "daily" && <><div className="daily-progress">
           <i
             style={{
               width: `${tasks.length ? Math.round((completed / tasks.length) * 100) : 0}%`,
@@ -1320,16 +1319,17 @@ function DailyAgenda({
           <button type="submit">
             <Plus /> 추가
           </button>
-        </form>
-        {(catchUpTasks.length > 0 || completedCatchUpTasks.length > 0) && <div className={`weekend-catchup ${isWeekend ? "active" : ""}`}>
+        </form></>}
+        {checklistTab === "catchup" && <div className={`weekend-catchup tab-view ${isWeekend ? "active" : ""}`}>
           <div className="catchup-heading">
             <div>
-              <small>{isWeekend ? "주말 보충" : "주말 보충 예정"}</small>
-              <h3>{isWeekend ? "이번 주 미완료 보충" : "주말 보충 예정"}</h3>
+              <small>최근 7일</small>
+              <h3>밀린 일과 보충 완료</h3>
             </div>
             <strong>{catchUpTasks.length}개 미완료 · {completedCatchUpTasks.length}개 완료</strong>
           </div>
           <div className="catchup-tasks">
+            {!catchUpTasks.length && !completedCatchUpTasks.length && <p className="catchup-empty">최근 7일 동안 밀린 일이 없습니다.</p>}
             {catchUpTasks.map((task) => (
               <label key={`${task.sourceDate}-${task.id}`}>
                 <input
@@ -1356,7 +1356,7 @@ function DailyAgenda({
             ))}
           </div>
           <p className="catchup-guide">
-            평일에 체크하지 못한 항목은 자동으로 이곳에 모입니다. 주말에 완료하면 원래 날짜의 체크리스트에도 반영됩니다.
+            최근 7일 안에 체크하지 못한 항목만 표시됩니다. 보충 완료하면 원래 날짜에도 반영되고, 7일이 지나면 이 탭에서 자동으로 사라집니다.
           </p>
         </div>}
       </article>

@@ -278,6 +278,25 @@
   background: #83a950;
   transition: width 0.2s;
 }
+.checklist-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: #f1f4f1;
+}
+.checklist-tabs button {
+  min-height: 35px;
+  border: 0;
+  background: transparent;
+  color: #748179;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.checklist-tabs button.active { background: #fff; color: #29483a; box-shadow: 0 1px 4px rgba(32, 58, 46, .08); }
+.checklist-tabs em { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 4px; border-radius: 9px; background: #dfe8dc; color: #52733f; font-size: 7px; font-style: normal; }
 .daily-tasks {
   border-top: 1px solid #edf0ed;
 }
@@ -365,6 +384,7 @@
   border-color: #a9bf8b;
   background: #f1f6eb;
 }
+.weekend-catchup.tab-view { margin-top: 0; }
 .catchup-heading {
   display: flex;
   align-items: center;
@@ -417,6 +437,7 @@
 .catchup-completed > span b { color: #718078; text-decoration: line-through; }
 .catchup-completed > span small { color: #89958e; font-size: 8px; }
 .catchup-completed > em { padding: 4px 6px; background: #e6f0df; color: #52733f; font-size: 7px; font-style: normal; font-weight: 800; }
+.catchup-tasks .catchup-empty { margin: 0; padding: 24px 8px; color: #89958e; text-align: center; font-size: 9px; }
 .catchup-tasks label:hover > i {
   border-color: #66824f;
   color: #66824f;
